@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL_PREFIX } from '../config';
 import { toast } from 'react-toastify';
@@ -6,9 +6,7 @@ import { toast } from 'react-toastify';
 const Login: React.FC = () => {
     const navigate = useNavigate();
 
-    console.log('API URL Prefix:', API_URL_PREFIX);
-
-    const handleLogin = () => {
+    const handleLogin = React.useCallback(async () => {
         const usernameInput = document.getElementById('username') as HTMLInputElement;
         const username = usernameInput ? usernameInput.value : '';
         if (!username || username.length < 3) {
@@ -23,13 +21,45 @@ const Login: React.FC = () => {
             return;
         }
 
-        if ("admin" === username && "admin" === password) {
+        try {
+            const response = await fetch(`${API_URL_PREFIX}user/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            localStorage.setItem('authToken', data.access_token.token);
             toast.success('Login successful!');
             navigate('/dashboard');
-        } else {
-            toast.error('Invalid username or password');
+
+        } catch (error) {
+            console.error('Error during login:', error);
+            toast.error('Login failed. Please try again.');
         }
-    };
+    }, [navigate]);
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Enter') {
+                const activeElement = document.activeElement;
+                if (activeElement && (activeElement.id === 'username' || activeElement.id === 'password')) {
+                    handleLogin();
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [handleLogin]);
 
     return (
         <div className="flex flex-col items-center justify-center h-screen">
