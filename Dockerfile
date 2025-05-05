@@ -1,5 +1,5 @@
 # Stage 1: Build the React application
-FROM node:22-bookworm-slim AS build
+FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 
