@@ -10,7 +10,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Serve the application with OpenResty
-FROM openresty/openresty
+FROM openresty/openresty:latest
 
 COPY --from=builder /app/dist /usr/local/openresty/nginx/html
 COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
