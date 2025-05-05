@@ -127,7 +127,7 @@ const Dashboard: React.FC = () => {
                             <Cell children="Created At" />
                         </div>
 
-                        {volunteers.map((item) => (
+                        {masters.map((item) => (
                             <React.Fragment key={item.id}>
                                 <div className='flex flex-wrap gap-4 p-2 border sm:border-0'>
                                     <Cell children={item?.name} />
