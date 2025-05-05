@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { API_URL_PREFIX } from '../config';
+import Cell from '../components/Cell';
 
 interface DataItem {
     profession: string;
@@ -73,30 +74,30 @@ const Dashboard: React.FC = () => {
         <div className="p-8 text-orange-200">
             {volunteers.length > 0 && (
                 <>
-                    <h1 className="text-2xl font-bold mb-4">Volunteers</h1>
+                    <h1 className="text-2xl font-bold my-4">Volunteers</h1>
 
                     <div className="flex flex-col gap-4">
 
-                        <div className='flex flex-wrap gap-4 border-b'>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Name</div>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Age</div>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Social</div>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Tg</div>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Profession</div>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Department</div>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Created At</div>
+                        <div className='hidden sm:flex flex-wrap gap-4 border sm:border-0'>
+                            <Cell children="Name" />
+                            <Cell children="Age" />
+                            <Cell children="Social" />
+                            <Cell children="Tg" />
+                            <Cell children="Profession" />
+                            <Cell children="Department" />
+                            <Cell children="Created At" />
                         </div>
 
                         {volunteers.map((item) => (
                             <React.Fragment key={item.id}>
-                                <div className='flex flex-wrap gap-4 border-b '>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{item.name}</div>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{item.age}</div>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{item.social}</div>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{item.email}</div>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{item.profession || '-'}</div>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{item.department}</div>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{new Date(item.created_at).toLocaleString()}</div>
+                                <div className='flex flex-wrap gap-4 p-2 border sm:border-0'>
+                                    <Cell children={item?.name} />
+                                    <Cell children={item?.age} />
+                                    <Cell children={item?.social} />
+                                    <Cell children={item?.email} />
+                                    <Cell children={item?.profession || '-'} />
+                                    <Cell children={item?.department} />
+                                    <Cell children={new Date(item.created_at).toLocaleString()} />
                                 </div>
                             </React.Fragment>
                         ))}
@@ -105,30 +106,46 @@ const Dashboard: React.FC = () => {
             )}
             {masters.length > 0 && (
                 <>
-                    <h1 className="text-2xl font-bold mb-4">Volunteers</h1>
+                    <h1 className="text-2xl font-bold my-4">Masters</h1>
 
                     <div className="flex flex-col gap-4">
 
-                        <div className='flex flex-wrap gap-4 border-b'>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Name</div>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Age</div>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Social</div>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Tg</div>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Profession</div>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Department</div>
-                            <div className="hidden sm:block font-bold p-2 w-full sm:w-auto">Created At</div>
+                        <div className='hidden sm:flex flex-wrap gap-4 border sm:border-0'>
+                            <Cell children="Name" />
+                            <Cell children="Country" />
+                            <Cell children="Tg" />
+                            <Cell children="Direction" />
+                            <Cell children="Description" />
+                            <Cell children="Date" />
+                            <Cell children="Program URL" />
+                            <Cell children="Social URL" />
+                            <Cell children="Quantity" />
+                            <Cell children="Time" />
+                            <Cell children="Duration" />
+                            <Cell children="Lang" />
+                            <Cell children="Raider" />
+                            <Cell children="Created At" />
                         </div>
 
                         {volunteers.map((item) => (
                             <React.Fragment key={item.id}>
-                                <div className='flex flex-wrap gap-4 border-b '>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{item.name}</div>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{item.age}</div>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{item.social}</div>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{item.email}</div>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{item.profession || '-'}</div>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{item.department}</div>
-                                    <div className="p-2 border-b border-gray-300 w-full sm:w-auto flex-grow">{new Date(item.created_at).toLocaleString()}</div>
+                                <div className='flex flex-wrap gap-4 p-2 border sm:border-0'>
+                                    <Cell children={item?.name} />
+                                    <Cell children={item?.country} />
+                                    <Cell children={item?.email} />
+                                    <Cell children={item?.program_direction} />
+                                    <Cell children={item?.program_description} />
+                                    <Cell children={item?.event_dates} />
+                                    <Cell children={item?.program_example} />
+                                    <Cell children={item?.social} />
+                                    <Cell children={item?.quantity} />
+                                    <Cell children={item?.time} />
+                                    <Cell children={item?.duration} />
+                                    <Cell children={item?.lang} />
+                                    <Cell children={item?.raider} />
+
+
+                                    <Cell children={new Date(item.created_at).toLocaleString()} />
                                 </div>
                             </React.Fragment>
                         ))}
