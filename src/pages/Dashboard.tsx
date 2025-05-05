@@ -94,7 +94,7 @@ const Dashboard: React.FC = () => {
                                     <Cell children={item?.name} />
                                     <Cell children={item?.age} />
                                     <Cell children={item?.social} />
-                                    <Cell children={item?.email} />
+                                    <Cell children={item?.phone} />
                                     <Cell children={item?.profession || '-'} />
                                     <Cell children={item?.department} />
                                     <Cell children={new Date(item.created_at).toLocaleString()} />
@@ -114,6 +114,7 @@ const Dashboard: React.FC = () => {
                             <Cell children="Name" />
                             <Cell children="Country" />
                             <Cell children="Tg" />
+                            <Cell children="Email" />
                             <Cell children="Direction" />
                             <Cell children="Description" />
                             <Cell children="Date" />
@@ -132,6 +133,7 @@ const Dashboard: React.FC = () => {
                                 <div className='flex flex-wrap gap-4 p-2 border sm:border-0'>
                                     <Cell children={item?.name} />
                                     <Cell children={item?.country} />
+                                    <Cell children={item?.phone} />
                                     <Cell children={item?.email} />
                                     <Cell children={item?.program_direction} />
                                     <Cell children={item?.program_description} />
