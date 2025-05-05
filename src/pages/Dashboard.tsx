@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
 
                     <div className="flex flex-col gap-4">
 
-                        <div className='hidden sm:flex flex-wrap gap-4 border sm:border-0'>
+                        <div className='flex flex-wrap gap-4 border sm:border-0'>
                             <Cell children="Name" />
                             <Cell children="Age" />
                             <Cell children="Social" />
@@ -110,7 +110,7 @@ const Dashboard: React.FC = () => {
 
                     <div className="flex flex-col gap-4">
 
-                        <div className='hidden sm:flex flex-wrap gap-4 border sm:border-0'>
+                        <div className='flex flex-wrap gap-4 border sm:border-0'>
                             <Cell children="Name" />
                             <Cell children="Country" />
                             <Cell children="Tg" />
