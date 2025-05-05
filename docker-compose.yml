@@ -1,0 +1,13 @@
+services:
+  hq-art-lab:
+    build: .
+    container_name: hq-art-lab
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:3004:80
+    networks:
+      - main
+
+networks:
+  main:
+    external: true
