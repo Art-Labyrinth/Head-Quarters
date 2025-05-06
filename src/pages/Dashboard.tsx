@@ -28,6 +28,8 @@ interface DataItem {
     raider: string | null;
     additional_info: string | null;
     created_at: string;
+
+    files: Array<string>;
 }
 
 const Dashboard: React.FC = () => {
@@ -142,6 +144,7 @@ const Dashboard: React.FC = () => {
                             <Cell children="Raider" />
                             <Cell children="Additional Info" />
                             <Cell children="Created At" />
+                            <Cell children="Files" />
                         </div>
 
                         {masters.map((item) => (
@@ -163,6 +166,27 @@ const Dashboard: React.FC = () => {
                                     <Cell children={item?.raider} />
                                     <Cell children={item?.additional_info} />
                                     <Cell children={new Date(item.created_at).toLocaleString()} />
+                                    <Cell children={item?.files.map((file, index) => {
+                                        const isImage = file.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i);
+                                        const isVideo = file.match(/\.(mp4|webm|ogg)$/i);
+
+                                        return (
+                                            <div key={index}>
+                                                {isImage && <img src={file} alt={`Preview ${index}`} className="w-20 h-20 object-cover" />}
+                                                {isVideo && (
+                                                    <video controls className="w-20 h-20">
+                                                        <source src={file} type={`video/${file.split('.').pop()}`} />
+                                                        Your browser does not support the video tag.
+                                                    </video>
+                                                )}
+                                                {!isImage && !isVideo && (
+                                                    <a href={file} target="_blank" rel="noopener noreferrer">
+                                                        {file}
+                                                    </a>
+                                                )}
+                                            </div>
+                                        );
+                                    })} />
                                 </div>
                             </React.Fragment>
                         ))}
