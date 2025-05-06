@@ -62,7 +62,7 @@ const Login: React.FC = () => {
     }, [handleLogin]);
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen">
+        <div className="flex flex-col items-center justify-center h-screen text-orange-100">
             <h1 className="text-3xl font-bold mb-6">Login</h1>
             <div className="flex flex-col w-sm shadow-md rounded">
                 <input id="username" type="text" placeholder="Username" required className="mb-3 p-2 border rounded bg-amber-50" />
