@@ -1,3 +1,1 @@
-const isDev = import.meta.env.MODE === 'development';
-
-export const API_URL_PREFIX = isDev ? 'http://localhost:8000/' : '/api/v1/';
+export const VITE_API_URL_PREFIX = import.meta.env.VITE_API_URL_PREFIX ?? '/api/v1/';

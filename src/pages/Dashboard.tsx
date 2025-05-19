@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { API_URL_PREFIX } from '../config';
+import { VITE_API_URL_PREFIX } from '../config';
 import Cell from '../components/Cell';
 import { useNavigate } from 'react-router-dom';
 
@@ -48,7 +48,7 @@ const Dashboard: React.FC = () => {
         const fetchData = async () => {
             try {
                 const response = await fetch(
-                    `${API_URL_PREFIX}form/get_forms`,
+                    `${VITE_API_URL_PREFIX}form/get_forms`,
                     {
                         method: 'GET',
                         headers: {

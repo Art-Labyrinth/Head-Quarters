@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_URL_PREFIX } from '../config';
+import { VITE_API_URL_PREFIX } from '../config';
 import { toast } from 'react-toastify';
 
 const Login: React.FC = () => {
@@ -22,7 +22,7 @@ const Login: React.FC = () => {
         }
 
         try {
-            const response = await fetch(`${API_URL_PREFIX}user/login`, {
+            const response = await fetch(`${VITE_API_URL_PREFIX}user/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
