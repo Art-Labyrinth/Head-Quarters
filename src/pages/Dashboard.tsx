@@ -10,6 +10,11 @@ interface DataItem {
     age: number;
     profession: string;
     department: string;
+    camping: string;
+    conditions: string;
+    help_now: boolean;
+    inspiration: string;
+    negative: string;
 
     name: string;
     country: string | null;
@@ -96,24 +101,36 @@ const Dashboard: React.FC = () => {
                     <div className="table gap-4 w-full">
 
                         <div className='table-row gap-4 border sm:border-0'>
+                            <Cell children="ID" />
                             <Cell children="Name" />
                             <Cell children="Age" />
                             <Cell children="Social" />
                             <Cell children="Tg" />
                             <Cell children="Profession" />
                             <Cell children="Department" />
+                            <Cell children="" />
+                            <Cell children="" />
+                            <Cell children="" />
+                            <Cell children="" />
+                            <Cell children="" />
                             <Cell children="Created At" />
                         </div>
 
                         {volunteers.map((item) => (
                             <React.Fragment key={item.id}>
                                 <div className='table-row gap-4 p-2 border sm:border-0'>
+                                    <Cell children={item?.id} />
                                     <Cell children={item?.name} />
                                     <Cell children={item?.age} />
                                     <Cell children={item?.social} />
                                     <Cell children={item?.phone} />
                                     <Cell children={item?.profession || '-'} />
                                     <Cell children={item?.department} />
+                                    <Cell children={item?.camping} />
+                                    <Cell children={item?.conditions} />
+                                    <Cell children={item?.help_now ? "Yes" : ""} />
+                                    <Cell children={item?.inspiration} />
+                                    <Cell children={item?.negative} />
                                     <Cell children={new Date(item.created_at).toLocaleString()} />
                                 </div>
                             </React.Fragment>
@@ -125,13 +142,15 @@ const Dashboard: React.FC = () => {
                 <>
                     <h1 className="text-2xl font-bold my-4">Masters</h1>
 
-                    <div className="table gap-4">
+                    <div className="flex flex-col gap-4 w-full">
 
-                        <div className='table-row gap-4 border sm:border-0'>
+                        <div className='flex flex-wrap border'>
+                            <Cell children="ID" />
                             <Cell children="Name" />
                             <Cell children="Country" />
                             <Cell children="Tg" />
                             <Cell children="Email" />
+                            <Cell children="Previously Participated" />
                             <Cell children="Direction" />
                             <Cell children="Description" />
                             <Cell children="Date" />
@@ -149,12 +168,14 @@ const Dashboard: React.FC = () => {
 
                         {masters.map((item) => (
                             <React.Fragment key={item.id}>
-                                <div className='table-row gap-4 p-2 border sm:border-0'>
-                                    <Cell children={item?.name} />
-                                    <Cell children={item?.country} />
-                                    <Cell children={item?.phone} />
-                                    <Cell children={item?.email} />
-                                    <Cell children={item?.program_direction} />
+                                <div className='flex flex-wrap gap-4 p-2 border'>
+                                    <Cell children={`ID: ${item?.id}`} />
+                                    <Cell children={`Name: ${item?.name}`} />
+                                    <Cell children={`City: ${item?.country}`} />
+                                    <Cell children={`Tg: ${item?.phone}`} />
+                                    <Cell children={`Fb: ${item?.email}`} />
+                                    <Cell children={`Prev: ${item?.previously_participated ? "Yes" : "No"}`} />
+                                    <Cell children={String(item?.program_direction).split(",").join("\n")} />
                                     <Cell children={item?.program_description} />
                                     <Cell children={item?.event_dates} />
                                     <Cell children={item?.program_example} />
