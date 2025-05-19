@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { VITE_API_URL_PREFIX } from '../config';
+import { VITE_API_URL_PREFIX } from '../../../shared/configs/config.ts';
 import { toast } from 'react-toastify';
 
 const Login: React.FC = () => {

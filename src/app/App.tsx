@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from '../pages/Login';
-import Dashboard from '../pages/Dashboard';
-import PrivateRoute from '../PrivateRoute';
+import Login from '../pages/auth/login/ui.tsx';
+import Dashboard from '../pages/dashboard/ui.tsx';
+import PrivateRoute from './PrivateRoute.tsx';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 

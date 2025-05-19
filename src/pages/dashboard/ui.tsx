@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { VITE_API_URL_PREFIX } from '../config';
-import Cell from '../components/Cell';
+import { VITE_API_URL_PREFIX } from '../../shared/configs/config.ts';
+import Cell from '../../components/Cell.tsx';
 import { useNavigate } from 'react-router-dom';
 
 interface DataItem {
