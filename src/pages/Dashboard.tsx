@@ -33,6 +33,7 @@ interface DataItem {
     raider: string | null;
     additional_info: string | null;
     created_at: string;
+    deleted_at: string | null;
 
     files: Array<string>;
 }
@@ -84,6 +85,24 @@ const Dashboard: React.FC = () => {
         fetchData();
     }, [navigate]);
 
+    const handleDelete = async (id: number) => {
+        if (!window.confirm('Вы уверены, что хотите удалить эту запись?')) return;
+        try {
+            const response = await fetch(`${API_URL_PREFIX}form/delete/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                },
+            });
+            if (!response.ok) throw new Error('Ошибка при удалении');
+            setVolunteers((prev) => prev.filter((item) => item.id !== id));
+            setMasters((prev) => prev.filter((item) => item.id !== id));
+        } catch {
+            alert('Ошибка при удалении');
+        }
+    };
+
     if (loading) {
         return <div className="flex items-center justify-center h-screen">Loading...</div>;
     }
@@ -93,7 +112,7 @@ const Dashboard: React.FC = () => {
     }
 
     return (
-        <div className="p-8 text-orange-200">
+        <div className="p-8 text-slate-200">
             {volunteers.length > 0 && (
                 <>
                     <h1 className="text-2xl font-bold my-4">Volunteers</h1>
@@ -114,24 +133,33 @@ const Dashboard: React.FC = () => {
                             <Cell children="" />
                             <Cell children="" />
                             <Cell children="Created At" />
+                            <Cell children="" />
                         </div>
 
                         {volunteers.map((item) => (
                             <React.Fragment key={item.id}>
-                                <div className='table-row gap-4 p-2 border sm:border-0'>
+                                <div className={`table-row gap-4 p-2 border sm:border-0 ${item?.deleted_at ? "text-gray-500 h-1" : ""}`}>
                                     <Cell children={item?.id} />
                                     <Cell children={item?.name} />
                                     <Cell children={item?.age} />
                                     <Cell children={item?.social} />
                                     <Cell children={item?.phone} />
                                     <Cell children={item?.profession || '-'} />
-                                    <Cell children={item?.department} />
+                                    <Cell children={String(item?.department).replaceAll(",", " ")} />
                                     <Cell children={item?.camping} />
                                     <Cell children={item?.conditions} />
                                     <Cell children={item?.help_now ? "Yes" : ""} />
                                     <Cell children={item?.inspiration} />
                                     <Cell children={item?.negative} />
                                     <Cell children={new Date(item.created_at).toLocaleString()} />
+                                    <Cell>
+                                        {!item?.deleted_at && (
+                                            <button
+                                                className="bg-red-600 hover:bg-red-800 text-white px-2 py-1 rounded text-lg"
+                                                onClick={() => handleDelete(item.id)}
+                                            >X</button>
+                                        )}
+                                    </Cell>
                                 </div>
                             </React.Fragment>
                         ))}
@@ -164,11 +192,12 @@ const Dashboard: React.FC = () => {
                             <Cell children="Additional Info" />
                             <Cell children="Created At" />
                             <Cell children="Files" />
+                            <Cell children="" />
                         </div>
 
                         {masters.map((item) => (
                             <React.Fragment key={item.id}>
-                                <div className='flex flex-wrap gap-4 p-2 border'>
+                                <div className={`flex flex-wrap border ${item?.deleted_at ? "text-gray-500 border-0" : "p-2 gap-4"}`}>
                                     <Cell children={`ID: ${item?.id}`} />
                                     <Cell children={`Name: ${item?.name}`} />
                                     <Cell children={`City: ${item?.country}`} />
@@ -191,7 +220,7 @@ const Dashboard: React.FC = () => {
                                         const isImage = file.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i);
                                         const isVideo = file.match(/\.(mp4|webm|ogg)$/i);
 
-                                        return (
+                                        return item?.deleted_at ? "" : (
                                             <div key={index}>
                                                 {isImage && <img src={file} alt={`Preview ${index}`} className="w-20 h-20 object-cover" />}
                                                 {isVideo && (
@@ -208,6 +237,14 @@ const Dashboard: React.FC = () => {
                                             </div>
                                         );
                                     })} />
+                                    <Cell>
+                                        {!item?.deleted_at && (
+                                            <button
+                                                className="bg-red-600 hover:bg-red-800 text-white px-2 py-1 rounded text-lg"
+                                                onClick={() => handleDelete(item.id)}
+                                            >X</button>
+                                        )}
+                                    </Cell>
                                 </div>
                             </React.Fragment>
                         ))}
