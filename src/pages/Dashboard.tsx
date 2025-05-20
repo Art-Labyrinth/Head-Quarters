@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { API_URL_PREFIX } from '../config';
 import Cell from '../components/Cell';
+import Tags from '../components/Tags';
 import { useNavigate } from 'react-router-dom';
 
 interface DataItem {
@@ -145,7 +146,7 @@ const Dashboard: React.FC = () => {
                                     <Cell children={item?.social} />
                                     <Cell children={item?.phone} />
                                     <Cell children={item?.profession || '-'} />
-                                    <Cell children={String(item?.department).replaceAll(",", " ")} />
+                                    <Tags children={item?.department} />
                                     <Cell children={item?.camping} />
                                     <Cell children={item?.conditions} />
                                     <Cell children={item?.help_now ? "Yes" : ""} />
@@ -204,7 +205,7 @@ const Dashboard: React.FC = () => {
                                     <Cell children={`Tg: ${item?.phone}`} />
                                     <Cell children={`Fb: ${item?.email}`} />
                                     <Cell children={`Prev: ${item?.previously_participated ? "Yes" : "No"}`} />
-                                    <Cell children={String(item?.program_direction).split(",").join("\n")} />
+                                    <Tags children={item?.program_direction} />
                                     <Cell children={item?.program_description} />
                                     <Cell children={item?.event_dates} />
                                     <Cell children={item?.program_example} />
