@@ -21,6 +21,7 @@ interface DataItem {
     country: string | null;
     phone: string;
     email: string | null;
+    fb: string | null;
     previously_participated: string | null;
     program_direction: string | null;
     program_description: string | null;
@@ -179,6 +180,7 @@ const Dashboard: React.FC = () => {
                             <Cell children="Country" />
                             <Cell children="Tg" />
                             <Cell children="Email" />
+                            <Cell children="Fb" />
                             <Cell children="Previously Participated" />
                             <Cell children="Direction" />
                             <Cell children="Description" />
@@ -203,7 +205,8 @@ const Dashboard: React.FC = () => {
                                     <Cell children={`Name: ${item?.name}`} />
                                     <Cell children={`City: ${item?.country}`} />
                                     <Cell children={`Tg: ${item?.phone}`} />
-                                    <Cell children={`Fb: ${item?.email}`} />
+                                    <Cell children={item?.email} />
+                                    <Cell children={`Fb: ${item?.fb}`} />
                                     <Cell children={`Prev: ${item?.previously_participated ? "Yes" : "No"}`} />
                                     <Tags children={item?.program_direction} />
                                     <Cell children={item?.program_description} />
