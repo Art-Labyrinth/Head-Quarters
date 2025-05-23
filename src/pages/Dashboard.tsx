@@ -16,11 +16,13 @@ interface DataItem {
     help_now: boolean;
     inspiration: string;
     negative: string;
+    experience: string;
 
     name: string;
     country: string | null;
     phone: string;
     email: string | null;
+    fb: string | null;
     previously_participated: string | null;
     program_direction: string | null;
     program_description: string | null;
@@ -127,12 +129,13 @@ const Dashboard: React.FC = () => {
                             <Cell children="Social" />
                             <Cell children="Tg" />
                             <Cell children="Profession" />
+                            <Cell children="Motivation" />
+                            <Cell children="Experience" />
+                            <Cell children="Camping" />
                             <Cell children="Department" />
-                            <Cell children="" />
-                            <Cell children="" />
-                            <Cell children="" />
-                            <Cell children="" />
-                            <Cell children="" />
+                            <Cell children="Not willing" />
+                            <Cell children="Now" />
+                            <Cell children="Personal" />
                             <Cell children="Created At" />
                             <Cell children="" />
                         </div>
@@ -146,12 +149,13 @@ const Dashboard: React.FC = () => {
                                     <Cell children={item?.social} />
                                     <Cell children={item?.phone} />
                                     <Cell children={item?.profession || '-'} />
-                                    <Tags children={item?.department} />
-                                    <Cell children={item?.camping} />
                                     <Cell children={item?.conditions} />
+                                    <Cell children={item?.experience} />
+                                    <Cell children={item?.camping} />
+                                    <Tags children={item?.department} />
+                                    <Cell children={item?.negative} />
                                     <Cell children={item?.help_now ? "Yes" : ""} />
                                     <Cell children={item?.inspiration} />
-                                    <Cell children={item?.negative} />
                                     <Cell children={new Date(item.created_at).toLocaleString()} />
                                     <Cell>
                                         {!item?.deleted_at && (
@@ -179,6 +183,7 @@ const Dashboard: React.FC = () => {
                             <Cell children="Country" />
                             <Cell children="Tg" />
                             <Cell children="Email" />
+                            <Cell children="Fb" />
                             <Cell children="Previously Participated" />
                             <Cell children="Direction" />
                             <Cell children="Description" />
@@ -203,7 +208,8 @@ const Dashboard: React.FC = () => {
                                     <Cell children={`Name: ${item?.name}`} />
                                     <Cell children={`City: ${item?.country}`} />
                                     <Cell children={`Tg: ${item?.phone}`} />
-                                    <Cell children={`Fb: ${item?.email}`} />
+                                    <Cell children={item?.email} />
+                                    <Cell children={`Fb: ${item?.fb}`} />
                                     <Cell children={`Prev: ${item?.previously_participated ? "Yes" : "No"}`} />
                                     <Tags children={item?.program_direction} />
                                     <Cell children={item?.program_description} />
