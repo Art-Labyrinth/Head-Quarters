@@ -16,6 +16,7 @@ interface DataItem {
     help_now: boolean;
     inspiration: string;
     negative: string;
+    experience: string;
 
     name: string;
     country: string | null;
@@ -128,12 +129,13 @@ const Dashboard: React.FC = () => {
                             <Cell children="Social" />
                             <Cell children="Tg" />
                             <Cell children="Profession" />
+                            <Cell children="Motivation" />
+                            <Cell children="Experience" />
+                            <Cell children="Camping" />
                             <Cell children="Department" />
-                            <Cell children="" />
-                            <Cell children="" />
-                            <Cell children="" />
-                            <Cell children="" />
-                            <Cell children="" />
+                            <Cell children="Not willing" />
+                            <Cell children="Now" />
+                            <Cell children="Personal" />
                             <Cell children="Created At" />
                             <Cell children="" />
                         </div>
@@ -147,12 +149,13 @@ const Dashboard: React.FC = () => {
                                     <Cell children={item?.social} />
                                     <Cell children={item?.phone} />
                                     <Cell children={item?.profession || '-'} />
-                                    <Tags children={item?.department} />
-                                    <Cell children={item?.camping} />
                                     <Cell children={item?.conditions} />
+                                    <Cell children={item?.experience} />
+                                    <Cell children={item?.camping} />
+                                    <Tags children={item?.department} />
+                                    <Cell children={item?.negative} />
                                     <Cell children={item?.help_now ? "Yes" : ""} />
                                     <Cell children={item?.inspiration} />
-                                    <Cell children={item?.negative} />
                                     <Cell children={new Date(item.created_at).toLocaleString()} />
                                     <Cell>
                                         {!item?.deleted_at && (
