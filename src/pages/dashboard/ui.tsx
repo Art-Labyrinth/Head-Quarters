@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { VITE_API_URL_PREFIX } from '../../shared/configs/config.ts';
 import Cell from '../../components/Cell.tsx';
-import { useNavigate } from 'react-router-dom';
+import Tags from "../../components/Tags.tsx";
 
 interface DataItem {
     id: number;
@@ -90,7 +91,7 @@ const Dashboard: React.FC = () => {
     const handleDelete = async (id: number) => {
         if (!window.confirm('Вы уверены, что хотите удалить эту запись?')) return;
         try {
-            const response = await fetch(`${API_URL_PREFIX}form/delete/${id}`, {
+            const response = await fetch(`${VITE_API_URL_PREFIX}form/delete/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
