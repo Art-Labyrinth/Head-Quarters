@@ -1,7 +1,7 @@
-import { request } from '../../shared/api'
-
 import { AxiosError, AxiosResponse } from 'axios'
 import qs from 'qs'
+
+import { request } from '../../shared/api'
 
 import { AuthResponseData } from './types'
 
