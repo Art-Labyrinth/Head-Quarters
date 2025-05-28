@@ -16,9 +16,9 @@ function App() {
     <>
       <Router>
         <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/dashboard" element={
-              <PrivateRoute isAllowed={isLoggedIn} redirectTo="/">
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={
+              <PrivateRoute isAllowed={isLoggedIn} redirectTo="/login">
                 <Dashboard />
               </PrivateRoute>
             }
