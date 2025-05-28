@@ -6,11 +6,11 @@ import { useUserStore } from '../entities/user'
 
 type PrivateRouteType = {
   isAllowed: boolean;
-  redirectTo: string;
-  children: React.ReactNode;
+  redirectTo?: string;
+  children?: React.ReactNode;
 }
 
-export function PrivateRoute({ isAllowed, redirectTo = '/', children }: PrivateRouteType): ReactElement {
+export function PrivateRoute({ isAllowed, redirectTo = '/login', children }: PrivateRouteType): ReactElement {
   const { pathname, search, hash } = useLocation()
 
   useLayoutEffect(() => {

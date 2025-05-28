@@ -8,6 +8,7 @@ import {useUserStore} from "../entities/user";
 import {Login} from '../pages/auth/login';
 import {Dashboard} from '../pages/dashboard';
 import {NotFound} from "../pages/not-found";
+import {Volunteers} from "../pages/volunteers";
 
 function App() {
   const { isLoggedIn } = useUserStore()
@@ -17,13 +18,10 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={
-              <PrivateRoute isAllowed={isLoggedIn} redirectTo="/login">
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
-            <Route path="*" element={<NotFound/>}/>
+
+          <Route path="/" element={<PrivateRoute isAllowed={isLoggedIn}><Dashboard /></PrivateRoute>}/>
+          <Route path="/volunteers" element={<PrivateRoute isAllowed={isLoggedIn}><Volunteers /></PrivateRoute>} />
+          <Route path="*" element={<NotFound/>}/>
         </Routes>
       </Router>
       <ToastContainer />
