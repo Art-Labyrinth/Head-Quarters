@@ -25,6 +25,7 @@ interface DataItem {
     fb: string | null;
     previously_participated: string | null;
     program_direction: string | null;
+    program_name: string | null;
     program_description: string | null;
     event_dates: string | null;
     program_example: string | null;
@@ -186,6 +187,7 @@ const Dashboard: React.FC = () => {
                             <Cell children="Fb" />
                             <Cell children="Previously Participated" />
                             <Cell children="Direction" />
+                            <Cell children="Program Name" />
                             <Cell children="Description" />
                             <Cell children="Date" />
                             <Cell children="Program URL" />
@@ -212,6 +214,7 @@ const Dashboard: React.FC = () => {
                                     <Cell children={`Fb: ${item?.fb}`} />
                                     <Cell children={`Prev: ${item?.previously_participated ? "Yes" : "No"}`} />
                                     <Tags children={item?.program_direction} />
+                                    <Cell children={item?.program_name} />
                                     <Cell children={item?.program_description} />
                                     <Cell children={item?.event_dates} />
                                     <Cell children={item?.program_example} />
