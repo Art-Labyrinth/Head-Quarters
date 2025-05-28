@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { VITE_API_URL_PREFIX } from '../../shared/configs/config.ts';
-import Cell from '../../components/Cell.tsx';
-import Tags from "../../components/Tags.tsx";
+
+import {VITE_API_URL_PREFIX} from "../../shared/configs/constants";
+
+import Cell from '../../shared/ui/Cell.tsx';
+import Tags from "../../shared/ui/Tags.tsx";
 
 interface DataItem {
     id: number;
@@ -42,7 +44,7 @@ interface DataItem {
     files: Array<string>;
 }
 
-const Dashboard: React.FC = () => {
+export const Dashboard: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
@@ -264,5 +266,3 @@ const Dashboard: React.FC = () => {
         </div>
     );
 };
-
-export default Dashboard;
