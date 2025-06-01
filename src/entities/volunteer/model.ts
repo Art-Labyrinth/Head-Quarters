@@ -33,8 +33,8 @@ export const useVolunteerListStore = create<VolunteerListStore>((set) => ({
       let errorText = "Unknown error"
 
       if (axios.isAxiosError(error)) {
-        set({ listError: error.response?.data.message || errorText })
-        errorText = error.response?.data.message
+        set({ listError: error.response?.data.detail || errorText })
+        errorText = error.response?.data.detail
       }
 
       throw errorText

@@ -1,20 +1,20 @@
-import { useNavigate } from 'react-router-dom'
-import { Formik } from 'formik'
-import { FormikHelpers } from 'formik/dist/types'
-import * as Yup from 'yup'
+import { useNavigate } from 'react-router-dom';
+import { Formik } from 'formik';
+import { FormikHelpers } from 'formik/dist/types';
+import * as Yup from 'yup';
 
-import { useUserStore } from '../../../entities/user'
-
-import type { LoginForm } from './types'
+import { useUserStore } from '../../../entities/user';
+import type { LoginForm as LoginFormType } from './types';
 
 export function LoginForm() {
-  const navigate = useNavigate()
-  const { login, loginRedirect } = useUserStore()
-  const initialValues: LoginForm = {
+  const navigate = useNavigate();
+  const { login, loginRedirect } = useUserStore();
+
+  const initialValues: LoginFormType = {
     username: '',
     password: '',
     submit: null,
-  }
+  };
 
   const yupValidationSchema = Yup.object().shape({
     username: Yup.string()
@@ -23,30 +23,26 @@ export function LoginForm() {
     password: Yup.string()
         .max(255, "Password must be at most 255 characters")
         .required("The password field is required"),
-  })
+  });
 
-  const formikOnSubmitAction = async (values: LoginForm, {
-    setErrors,
-    setStatus,
-    setSubmitting,
-  }: FormikHelpers<LoginForm>) => {
+  const formikOnSubmitAction = async (values: LoginFormType, { setErrors, setStatus, setSubmitting }: FormikHelpers<LoginFormType>) => {
     try {
-      const { username, password } = values
+      const { username, password } = values;
       const sendValues = {
-        ...(username && { username: username }),
-        ...(password && { password: password }),
-      }
+        ...(username && { username }),
+        ...(password && { password }),
+      };
 
-      await login(sendValues)
-      setStatus({ success: true })
-      navigate(loginRedirect)
+      await login(sendValues);
+      setStatus({ success: true });
+      navigate(loginRedirect);
     } catch (error: any) {
-      setErrors({ submit: Array.isArray(error) ? error?.join('|') : error })
-      setStatus({ success: false })
+      setErrors({ submit: Array.isArray(error) ? error.join('|') : error });
+      setStatus({ success: false });
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
       <Formik
@@ -63,9 +59,15 @@ export function LoginForm() {
             touched,
             values,
           }) => (
-            <form noValidate onSubmit={handleSubmit} className="w-full max-w-md mx-auto space-y-4">
+            <form noValidate onSubmit={handleSubmit} className="space-y-6">
+              {/* Logo */}
+              <div className="flex justify-center mb-4">
+                <img src="/logo.svg" alt="Logo" className="h-12" />
+              </div>
+
+              {/* Username */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                   Username
                 </label>
                 <input
@@ -75,12 +77,13 @@ export function LoginForm() {
                     onBlur={handleBlur}
                     onChange={handleChange}
                     value={values.username}
-                    className={`p-2 text-white block w-full rounded-md border ${
+                    className={`mt-1 p-2 block w-full rounded-md border ${
                         touched.username && errors.username ? 'border-red-500' : 'border-gray-300'
                     } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
                 />
               </div>
 
+              {/* Password */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Password
@@ -92,19 +95,20 @@ export function LoginForm() {
                     onBlur={handleBlur}
                     onChange={handleChange}
                     value={values.password}
-                    className={`p-2 text-white block w-full rounded-md border ${
+                    className={`mt-1 p-2 block w-full rounded-md border ${
                         touched.password && errors.password ? 'border-red-500' : 'border-gray-300'
                     } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
                 />
               </div>
 
+              {/* Error Display */}
               {touched.submit && Object.keys(errors).length > 0 && (
                   <div className="rounded-md bg-red-100 p-4 text-sm text-red-700 space-y-2">
                     {errors.username && touched.username && <div>{errors.username}</div>}
                     {errors.password && touched.password && <div>{errors.password}</div>}
                     {errors.submit && touched.submit && (
                         <div className="space-y-1">
-                          {errors.submit?.split('|')?.map((item: string) => (
+                          {errors.submit.split('|').map((item: string) => (
                               <div key={item}>{item}</div>
                           ))}
                         </div>
@@ -112,6 +116,7 @@ export function LoginForm() {
                   </div>
               )}
 
+              {/* Submit Button */}
               <button
                   type="submit"
                   disabled={isSubmitting}
@@ -146,5 +151,5 @@ export function LoginForm() {
             </form>
         )}
       </Formik>
-  )
+  );
 }

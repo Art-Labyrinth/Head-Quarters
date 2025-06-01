@@ -54,7 +54,7 @@ export const MainLayout = ({header, children}: MainLayoutProps) => {
                 {/* Logo Section */}
                 <div className="flex items-center space-x-4">
                     <button
-                        className="lg:hidden p-2 rounded-md hover:bg-stone-200 transition-colors bg-black"
+                        className="lg:hidden p-2 rounded-md hover:bg-stone-200 transition-colors"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     >
                         {isMobileMenuOpen ? <X size={20}/> : <Menu size={20}/>}

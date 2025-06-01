@@ -43,7 +43,7 @@ export const useUserStore = create<IUserStore>((set, get) => ({
       let errorText = t('global:Unknown error')
 
       if (axios.isAxiosError(error)) {
-        errorText = error.response?.data.message
+        errorText = error.response?.data.detail
       }
 
       throw errorText
