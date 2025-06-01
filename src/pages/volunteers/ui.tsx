@@ -4,6 +4,7 @@ import debounce from 'debounce'
 
 import {useVolunteerListStore} from "../../entities/volunteer";
 import {VolunteersTable} from "../../widgets/volunteer/ui.tsx";
+import {MainLayout} from "../../widgets/layouts/main";
 
 export const Volunteers: React.FC = () => {
     const [search] = useSearchParams()
@@ -21,5 +22,9 @@ export const Volunteers: React.FC = () => {
         }
     }, [debouncedResults])
 
-    return <VolunteersTable/>
+    return (
+        <MainLayout header={'Volunteers'}>
+            <VolunteersTable/>
+        </MainLayout>
+    )
 };
