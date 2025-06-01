@@ -4,6 +4,9 @@
     "target": "ES2021",
     "useDefineForClassFields": true,
     "lib": ["ES2021", "DOM", "DOM.Iterable"],
+    "allowJs": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
     "module": "ESNext",
     "skipLibCheck": true,
 
