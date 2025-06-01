@@ -1,12 +1,12 @@
 import {useMemo, useState} from "react";
 import {useVolunteerListStore} from "../../entities/volunteer";
 import {ChevronLeft, ChevronRight, Eye, Search} from "lucide-react";
-import {DataItem} from "../../entities/volunteer/types.ts";
+import {Volunteer} from "../../entities/volunteer/types.ts";
 
 export function VolunteerTable() {
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const [selectedVolunteer, setSelectedVolunteer] = useState<DataItem | null>(null);
+    const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
     const { list } = useVolunteerListStore();
     const itemsPerPage = 10;
 
@@ -14,7 +14,7 @@ export function VolunteerTable() {
         return list?.filter((volunteer) => {
             return volunteer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 volunteer.profession.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                volunteer.department.toLowerCase().includes(searchTerm.toLowerCase());
+                (volunteer.department || "").toLowerCase().includes(searchTerm.toLowerCase());
         });
     }, [list, searchTerm]);
 
@@ -53,7 +53,7 @@ export function VolunteerTable() {
                                 />
                                 <input
                                     type="text"
-                                    placeholder="Search volunteers..."
+                                    placeholder="Search volunteers by name, profession, department..."
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);

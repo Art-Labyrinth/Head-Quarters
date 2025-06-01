@@ -1,37 +1,33 @@
-export type DataItem = {
+export type Volunteer = {
     id: number;
-    form_type: string;
-
+    name: string;
     age: number;
     profession: string;
-    department: string;
-    camping: string;
-    conditions: string;
-    help_now: boolean;
-    inspiration: string;
-    negative: string;
-    experience: string;
-
-    name: string;
-    country: string | null;
-    phone: string;
-    email: string | null;
-    fb: string | null;
+    department: string | null;
+    experience: string | null;
+    conditions: string | null;
+    inspiration: string | null;
+    negative: string | null;
+    camping: string | null;
     previously_participated: string | null;
-    program_direction: string | null;
-    program_name: string | null;
-    program_description: string | null;
     event_dates: string | null;
-    program_example: string | null;
-    social: string | null;
-    quantity: number | null;
-    time: string | null;
     duration: string | null;
+    quantity: number | null;
+    email: string | null;
+    phone: string;
+    social: string | null;
+    fb: string | null;
     lang: string | null;
+    country: string | null;
+    help_now: boolean;
+    program_name: string | null;
+    program_direction: string | null;
+    program_description: string | null;
+    program_example: string | null;
     raider: string | null;
     additional_info: string | null;
     created_at: string;
     deleted_at: string | null;
-
-    files: Array<string>;
-}
+    form_type: "volunteer" | string;
+    time: string | null;
+};

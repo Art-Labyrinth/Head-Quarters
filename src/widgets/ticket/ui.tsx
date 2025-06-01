@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Eye, Search } from "lucide-react";
 import { useTicketListStore } from "../../entities/ticket";
+import {Ticket} from "../../entities/ticket/types.ts";
 
 export function TicketTable() {
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const [selectedTicket, setSelectedTicket] = useState(null);
+    const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const { list } = useTicketListStore();
     const itemsPerPage = 10;
 

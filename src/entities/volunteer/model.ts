@@ -2,10 +2,10 @@ import axios from 'axios'
 import { create } from 'zustand'
 
 import { getVolunteerList } from './api.ts'
-import {DataItem} from "./types.ts";
+import {Volunteer} from "./types.ts";
 
 export type VolunteerListStore = {
-  list: DataItem[] | null,
+  list: Volunteer[] | null,
   listError: null,
   listLoading: boolean,
 
