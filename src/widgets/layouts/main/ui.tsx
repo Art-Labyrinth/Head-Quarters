@@ -1,36 +1,47 @@
-import { useState } from 'react';
-import {
-    Menu,
-    X,
-    Home,
-    Settings,
-    Search,
-    ChevronDown,
-    User,
-    LogOut,
-    GraduationCap, Heart, Ticket
-} from 'lucide-react';
-import { usePageTitle } from '../../../shared/lib';
-import {useLocation, useNavigate} from "react-router-dom";
+import React, {useState} from 'react';
+import {ChevronDown, GraduationCap, Heart, Home, LogOut, Menu, Search, Ticket, User, X} from 'lucide-react';
+import {usePageTitle} from '../../../shared/lib';
+import {useNavigate} from "react-router-dom";
+import {useUserStore} from "../../../entities/user";
+import {UserRole} from "../../../entities/user/types.ts";
 
 export type MainLayoutProps = {
     header: string,
     children?: React.ReactNode;
 };
 
-export const MainLayout = ({ header, children }: MainLayoutProps) => {
+export const MainLayout = ({header, children}: MainLayoutProps) => {
+    const {session} = useUserStore()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-    const location = useLocation()
     const navigate = useNavigate()
 
     const isRouteActive = (route: string) => window.location.pathname === route
+    const hasPermission = (role: UserRole) => session?.role === role || session?.role === UserRole.admin
 
     const menuItems = [
-        { icon: Home, label: 'Dashboard', route: '/', active: isRouteActive('/') },
-        { icon: GraduationCap, label: 'Masters', route: '/masters', active: isRouteActive('/masters') },
-        { icon: Heart, label: 'Volunteers', route: '/volunteers', active: isRouteActive('/volunteers') },
-        { icon: Ticket, label: 'Tickets',  route: '/tickets', active: isRouteActive('/tickets') },
+        {icon: Home, label: 'Dashboard', route: '/', active: isRouteActive('/'), hasPermission: true},
+        {
+            icon: GraduationCap,
+            label: 'Masters',
+            route: '/masters',
+            active: isRouteActive('/masters'),
+            hasPermission: hasPermission(UserRole.master)
+        },
+        {
+            icon: Heart,
+            label: 'Volunteers',
+            route: '/volunteers',
+            active: isRouteActive('/volunteers'),
+            hasPermission: hasPermission(UserRole.volunteer)
+        },
+        {
+            icon: Ticket,
+            label: 'Tickets',
+            route: '/tickets',
+            active: isRouteActive('/tickets'),
+            hasPermission: hasPermission(UserRole.tickets)
+        },
     ];
 
     usePageTitle(header)
@@ -38,27 +49,28 @@ export const MainLayout = ({ header, children }: MainLayoutProps) => {
     return (
         <div className="min-h-screen bg-stone-100">
             {/* Header */}
-            <header className="bg-stone-50 border-b border-stone-200 px-4 lg:px-6 h-16 flex items-center justify-between">
+            <header
+                className="bg-stone-50 border-b border-stone-200 px-4 lg:px-6 h-16 flex items-center justify-between">
                 {/* Logo Section */}
                 <div className="flex items-center space-x-4">
                     <button
-                        className="lg:hidden p-2 rounded-md hover:bg-stone-200 transition-colors"
+                        className="lg:hidden p-2 rounded-md hover:bg-stone-200 transition-colors bg-black"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     >
-                        {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                        {isMobileMenuOpen ? <X size={20}/> : <Menu size={20}/>}
                     </button>
                     <div className="flex items-center space-x-2">
                         <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center">
-                            <span className="text-white font-bold text-sm">D</span>
+                            <span className="text-white font-bold text-sm">{header.charAt(0)}</span>
                         </div>
-                        <span className="hidden sm:block font-semibold text-stone-800 text-lg">Dashboard</span>
+                        <span className="hidden sm:block font-semibold text-stone-800 text-lg">{header}</span>
                     </div>
                 </div>
 
                 {/* Desktop Navigation Menu */}
                 <nav className="hidden lg:flex items-center space-x-8">
                     {menuItems.map((item, index) => (
-                        <button
+                        item.hasPermission && <button
                             key={index}
                             onClick={() => navigate(item.route)}
                             className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
@@ -67,7 +79,7 @@ export const MainLayout = ({ header, children }: MainLayoutProps) => {
                                     : 'text-stone-600 hover:text-stone-800 hover:bg-stone-200'
                             }`}
                         >
-                            <item.icon size={18} />
+                            <item.icon size={18}/>
                             <span>{item.label}</span>
                         </button>
                     ))}
@@ -76,7 +88,7 @@ export const MainLayout = ({ header, children }: MainLayoutProps) => {
                 {/* User Section */}
                 <div className="flex items-center space-x-4">
                     <button className="hidden sm:flex p-2 rounded-md hover:bg-stone-200 transition-colors">
-                        <Search size={20} className="text-stone-600" />
+                        <Search size={20} className="text-stone-600"/>
                     </button>
                     <div className="relative">
                         <button
@@ -84,29 +96,30 @@ export const MainLayout = ({ header, children }: MainLayoutProps) => {
                             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                         >
                             <div className="w-8 h-8 bg-stone-300 rounded-full flex items-center justify-center">
-                                <span className="text-stone-600 font-medium text-sm">JD</span>
+                                <span className="text-stone-600 font-medium text-sm">{session?.username?.charAt(0)}</span>
                             </div>
                             <div className="hidden md:block">
-                                <div className="text-sm font-medium text-stone-800">John Doe</div>
-                                <div className="text-xs text-stone-500">Admin</div>
+                                <div className="text-sm font-medium text-stone-800">{session?.username}</div>
+                                <div className="text-xs text-stone-500">{session?.role}</div>
                             </div>
-                            <ChevronDown size={16} className={`text-stone-500 transition-all duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                            <ChevronDown size={16}
+                                         className={`text-stone-500 transition-all duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`}/>
                         </button>
 
                         {/* User Dropdown Menu */}
                         {isUserMenuOpen && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-stone-200 py-1 z-50">
-                                <button className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors">
-                                    <User size={16} />
+                            <div
+                                className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-stone-200 py-1 z-50">
+                                <button
+                                    className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors" onClick={() => navigate('/profile')}>
+                                    <User size={16}/>
                                     <span>Profile</span>
                                 </button>
-                                <button className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors">
-                                    <Settings size={16} />
-                                    <span>Settings</span>
-                                </button>
-                                <hr className="my-1 border-stone-200" />
-                                <button className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                                    <LogOut size={16} />
+                                <hr className="my-1 border-stone-200"/>
+                                <button
+                                    className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                    onClick={() => useUserStore.getState().logout(session)}>
+                                    <LogOut size={16}/>
                                     <span>Logout</span>
                                 </button>
                             </div>
@@ -117,27 +130,30 @@ export const MainLayout = ({ header, children }: MainLayoutProps) => {
 
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
-                <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setIsMobileMenuOpen(false)}>
-                    <div className="fixed left-0 top-0 h-full w-64 bg-stone-50 shadow-lg" onClick={(e) => e.stopPropagation()}>
+                <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50"
+                     onClick={() => setIsMobileMenuOpen(false)}>
+                    <div className="fixed left-0 top-0 h-full w-64 bg-stone-50 shadow-lg"
+                         onClick={(e) => e.stopPropagation()}>
                         <div className="p-4 border-b border-stone-200">
                             <div className="flex items-center space-x-2">
                                 <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center">
-                                    <span className="text-white font-bold text-sm">D</span>
+                                    <span className="text-white font-bold text-sm">{header.charAt(0)}</span>
                                 </div>
-                                <span className="font-semibold text-stone-800 text-lg">Dashboard</span>
+                                <span className="font-semibold text-stone-800 text-lg">{header}</span>
                             </div>
                         </div>
                         <nav className="p-4 space-y-2">
                             {menuItems.map((item, index) => (
-                                <button
+                                item.hasPermission && <button
                                     key={index}
                                     className={`w-full flex items-center space-x-3 px-3 py-3 rounded-md transition-colors ${
                                         item.active
                                             ? 'bg-amber-100 text-amber-800 font-medium'
                                             : 'text-stone-600 hover:text-stone-800 hover:bg-stone-200'
                                     }`}
+                                    onClick={() => navigate(item.route)}
                                 >
-                                    <item.icon size={20} />
+                                    <item.icon size={20}/>
                                     <span>{item.label}</span>
                                 </button>
                             ))}

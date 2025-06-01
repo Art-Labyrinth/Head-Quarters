@@ -6,7 +6,7 @@ import { request } from '../../shared/api'
 import { AuthResponseData } from './types'
 
 export const userAuth = (
-    values: Record<string, string>
+    values: object
 ): Promise<AxiosResponse<AuthResponseData> | AxiosError> => {
     return request.post('/user/auth', qs.stringify(values), {
         headers: {
