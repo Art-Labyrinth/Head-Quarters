@@ -1,10 +1,10 @@
 import axios from 'axios'
 import { create } from 'zustand'
 
-import { getVolunteerList } from './api.ts'
+import { getTicketList } from './api.ts'
 import {DataItem} from "../types.ts";
 
-export type VolunteerListStore = {
+export type TicketListStore = {
   list: DataItem[] | null,
   listError: null,
   listLoading: boolean,
@@ -12,7 +12,7 @@ export type VolunteerListStore = {
   getList: (search: URLSearchParams) => Promise<void>
 }
 
-export const useVolunteerListStore = create<VolunteerListStore>((set) => ({
+export const useTicketListStore = create<TicketListStore>((set) => ({
   list: null,
   listError: null,
   listLoading: false,
@@ -23,7 +23,7 @@ export const useVolunteerListStore = create<VolunteerListStore>((set) => ({
       set({ listError: null })
       set({ listLoading: true })
 
-      const response = await getVolunteerList(search)
+      const response = await getTicketList(search)
 
       if (!axios.isAxiosError(response)) {
         set({ list: response.data })

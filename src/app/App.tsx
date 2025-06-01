@@ -8,7 +8,9 @@ import {useUserStore} from "../entities/user";
 import {Login} from '../pages/auth/login';
 import {Dashboard} from '../pages/dashboard';
 import {NotFound} from "../pages/not-found";
-import {Volunteers} from "../pages/volunteers";
+import {VolunteerPage} from "../pages/volunteer";
+import {MasterPage} from "../pages/master";
+import {TicketPage} from "../pages/ticket";
 
 function App() {
   const { isLoggedIn } = useUserStore()
@@ -20,7 +22,9 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           <Route path="/" element={<PrivateRoute isAllowed={isLoggedIn}><Dashboard /></PrivateRoute>}/>
-          <Route path="/volunteers" element={<PrivateRoute isAllowed={isLoggedIn}><Volunteers /></PrivateRoute>} />
+          <Route path="/volunteers" element={<PrivateRoute isAllowed={isLoggedIn}><VolunteerPage /></PrivateRoute>} />
+          <Route path="/masters" element={<PrivateRoute isAllowed={isLoggedIn}><MasterPage /></PrivateRoute>} />
+          <Route path="/masters" element={<PrivateRoute isAllowed={isLoggedIn}><TicketPage /></PrivateRoute>} />
           <Route path="*" element={<NotFound/>}/>
         </Routes>
       </Router>

@@ -6,7 +6,7 @@ import {useVolunteerListStore} from "../../entities/volunteer";
 import {VolunteersTable} from "../../widgets/volunteer/ui.tsx";
 import {MainLayout} from "../../widgets/layouts/main";
 
-export const Volunteers: React.FC = () => {
+export const VolunteerPage: React.FC = () => {
     const [search] = useSearchParams()
     const { getList } = useVolunteerListStore()
 

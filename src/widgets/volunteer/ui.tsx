@@ -1,7 +1,7 @@
 import {useMemo, useState} from "react";
 import {useVolunteerListStore} from "../../entities/volunteer";
 import {ChevronLeft, ChevronRight, Eye, Search} from "lucide-react";
-import {DataItem} from "../../entities/volunteer/types.ts";
+import {DataItem} from "../../entities/types.ts";
 
 export function VolunteersTable() {
     const [searchTerm, setSearchTerm] = useState("");
