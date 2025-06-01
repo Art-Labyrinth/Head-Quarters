@@ -3,8 +3,8 @@ import {useSearchParams} from "react-router-dom";
 import debounce from 'debounce'
 
 import {useVolunteerListStore} from "../../entities/volunteer";
-import {VolunteersTable} from "../../widgets/volunteer/ui.tsx";
 import {MainLayout} from "../../widgets/layouts/main";
+import {VolunteerTable} from "../../widgets/volunteer";
 
 export const VolunteerPage: React.FC = () => {
     const [search] = useSearchParams()
@@ -24,7 +24,7 @@ export const VolunteerPage: React.FC = () => {
 
     return (
         <MainLayout header={'Volunteers'}>
-            <VolunteersTable/>
+            <VolunteerTable/>
         </MainLayout>
     )
 };

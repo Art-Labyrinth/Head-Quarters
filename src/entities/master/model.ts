@@ -2,7 +2,7 @@ import axios from 'axios'
 import { create } from 'zustand'
 
 import { getMasterList } from './api.ts'
-import {DataItem} from "../types.ts";
+import {DataItem} from "../volunteer/types.ts";
 
 export type MasterListStore = {
   list: DataItem[] | null,

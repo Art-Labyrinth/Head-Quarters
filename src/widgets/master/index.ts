@@ -1,0 +1,1 @@
+export {MasterTable} from './ui'

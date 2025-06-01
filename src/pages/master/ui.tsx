@@ -2,9 +2,9 @@ import React, {useEffect, useMemo} from 'react';
 import {useSearchParams} from "react-router-dom";
 import debounce from 'debounce'
 
-import {VolunteersTable} from "../../widgets/volunteer/ui.tsx";
 import {MainLayout} from "../../widgets/layouts/main";
 import {useMasterListStore} from "../../entities/master";
+import {MasterTable} from "../../widgets/master";
 
 export const MasterPage: React.FC = () => {
     const [search] = useSearchParams()
@@ -24,7 +24,7 @@ export const MasterPage: React.FC = () => {
 
     return (
         <MainLayout header={'Masters'}>
-            <VolunteersTable/>
+            <MasterTable/>
         </MainLayout>
     )
 };

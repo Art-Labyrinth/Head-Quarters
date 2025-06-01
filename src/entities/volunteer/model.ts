@@ -2,7 +2,7 @@ import axios from 'axios'
 import { create } from 'zustand'
 
 import { getVolunteerList } from './api.ts'
-import {DataItem} from "../types.ts";
+import {DataItem} from "./types.ts";
 
 export type VolunteerListStore = {
   list: DataItem[] | null,

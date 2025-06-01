@@ -1,20 +1,20 @@
 import {useMemo, useState} from "react";
-import {useVolunteerListStore} from "../../entities/volunteer";
 import {ChevronLeft, ChevronRight, Eye, Search} from "lucide-react";
 import {DataItem} from "../../entities/volunteer/types.ts";
+import {useTicketListStore} from "../../entities/ticket";
 
-export function VolunteerTable() {
+export function MasterTable() {
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const [selectedVolunteer, setSelectedVolunteer] = useState<DataItem | null>(null);
-    const { list } = useVolunteerListStore();
+    const [selectedMaster, setSelectedMaster] = useState<DataItem | null>(null);
+    const { list } = useTicketListStore();
     const itemsPerPage = 10;
 
     const filteredData = useMemo(() => {
-        return list?.filter((volunteer) => {
-            return volunteer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                volunteer.profession.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                volunteer.department.toLowerCase().includes(searchTerm.toLowerCase());
+        return list?.filter((master) => {
+            return master.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                master.profession.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                master.department.toLowerCase().includes(searchTerm.toLowerCase());
         });
     }, [list, searchTerm]);
 
@@ -26,9 +26,9 @@ export function VolunteerTable() {
     );
 
     const handleDelete = () => {
-        const confirmed = window.confirm("Are you sure you want to delete this volunteer?");
+        const confirmed = window.confirm("Are you sure you want to delete this master?");
         if (confirmed) {
-            setSelectedVolunteer(null);
+            setSelectedMaster(null);
         }
     };
 
@@ -39,7 +39,7 @@ export function VolunteerTable() {
                     <div className="mb-6">
                         <h1 className="text-2xl lg:text-3xl font-bold text-stone-800 mb-2">Volunteers Management</h1>
                         <p className="text-stone-600">
-                            Manage your volunteers efficiently with our comprehensive dashboard.
+                            Manage your masters efficiently with our comprehensive dashboard.
                         </p>
                     </div>
 
@@ -53,7 +53,7 @@ export function VolunteerTable() {
                                 />
                                 <input
                                     type="text"
-                                    placeholder="Search volunteers..."
+                                    placeholder="Search masters..."
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
@@ -80,16 +80,16 @@ export function VolunteerTable() {
                                 </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-stone-200">
-                                {paginatedData?.map((volunteer) => (
-                                    <tr key={volunteer.id} className="hover:bg-stone-50">
-                                        <td className="px-6 py-4 text-sm font-medium text-stone-900">{volunteer.name}</td>
-                                        <td className="px-6 py-4 text-sm text-stone-500 hidden md:table-cell">{volunteer.age}</td>
-                                        <td className="px-6 py-4 text-sm text-stone-500 hidden lg:table-cell">{volunteer.profession}</td>
-                                        <td className="px-6 py-4 text-sm text-stone-500">{volunteer.department}</td>
-                                        <td className="px-6 py-4 text-sm text-stone-500 hidden sm:table-cell">{volunteer.age}h</td>
+                                {paginatedData?.map((master) => (
+                                    <tr key={master.id} className="hover:bg-stone-50">
+                                        <td className="px-6 py-4 text-sm font-medium text-stone-900">{master.name}</td>
+                                        <td className="px-6 py-4 text-sm text-stone-500 hidden md:table-cell">{master.age}</td>
+                                        <td className="px-6 py-4 text-sm text-stone-500 hidden lg:table-cell">{master.profession}</td>
+                                        <td className="px-6 py-4 text-sm text-stone-500">{master.department}</td>
+                                        <td className="px-6 py-4 text-sm text-stone-500 hidden sm:table-cell">{master.age}h</td>
                                         <td className="px-6 py-4 text-sm">
                                             <button
-                                                onClick={() => setSelectedVolunteer(volunteer)}
+                                                onClick={() => setSelectedMaster(master)}
                                                 className="inline-flex items-center gap-1 text-amber-600 hover:text-amber-800 font-medium"
                                             >
                                                 <Eye size={16} />
@@ -164,21 +164,21 @@ export function VolunteerTable() {
             </main>
 
             {/* Modal */}
-            {selectedVolunteer && (
+            {selectedMaster && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
                         <div className="p-6">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-lg sm:text-xl font-bold text-stone-800">Volunteer Details</h2>
                                 <button
-                                    onClick={() => setSelectedVolunteer(null)}
+                                    onClick={() => setSelectedMaster(null)}
                                     className="text-stone-400 hover:text-stone-600 text-2xl font-semibold"
                                 >
                                     ×
                                 </button>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {Object.entries(selectedVolunteer).map(([key, value]) => (
+                                {Object.entries(selectedMaster).map(([key, value]) => (
                                     <div key={key} className="border-b border-stone-200 pb-2">
                                         <dt className="text-sm font-medium text-stone-500 capitalize mb-1">
                                             {key.replace(/_/g, " ")}
@@ -201,7 +201,7 @@ export function VolunteerTable() {
                                     Delete
                                 </button>
                                 <button
-                                    onClick={() => setSelectedVolunteer(null)}
+                                    onClick={() => setSelectedMaster(null)}
                                     className="px-6 py-2 bg-stone-200 text-stone-800 rounded-md hover:bg-stone-300 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
                                 >
                                     Close
