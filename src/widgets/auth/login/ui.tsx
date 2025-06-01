@@ -62,7 +62,7 @@ export function LoginForm() {
             <form noValidate onSubmit={handleSubmit} className="space-y-6">
               {/* Logo */}
               <div className="flex justify-center mb-4">
-                <img src="/logo.svg" alt="Logo" className="h-12" />
+                <img src="/images/logo.png" alt="Logo" className="h-12" />
               </div>
 
               {/* Username */}

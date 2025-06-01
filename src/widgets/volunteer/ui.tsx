@@ -25,7 +25,7 @@ export function VolunteersTable() {
         currentPage * itemsPerPage
     );
 
-    const handleDelete = (volunteerId: number) => {
+    const handleDelete = () => {
         const confirmed = window.confirm("Are you sure you want to delete this volunteer?");
         if (confirmed) {
             setSelectedVolunteer(null);
@@ -195,7 +195,7 @@ export function VolunteersTable() {
                             </div>
                             <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
                                 <button
-                                    onClick={() => handleDelete(selectedVolunteer.id)}
+                                    onClick={() => handleDelete()}
                                     className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                                 >
                                     Delete

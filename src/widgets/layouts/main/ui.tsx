@@ -53,18 +53,16 @@ export const MainLayout = ({header, children}: MainLayoutProps) => {
                 className="bg-stone-50 border-b border-stone-200 px-4 lg:px-6 h-16 flex items-center justify-between">
                 {/* Logo Section */}
                 <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                        <img src="/images/logo.png" alt="Logo" className="h-12" />
+                    </div>
                     <button
-                        className="lg:hidden p-2 rounded-md hover:bg-stone-200 transition-colors"
+                        className="lg:hidden p-2 rounded-md hover:bg-stone-200 transition-colors flex items-center gap-2"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     >
-                        {isMobileMenuOpen ? <X size={20}/> : <Menu size={20}/>}
+                        {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                        Menu
                     </button>
-                    <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center">
-                            <span className="text-white font-bold text-sm">{header.charAt(0)}</span>
-                        </div>
-                        <span className="hidden sm:block font-semibold text-stone-800 text-lg">{header}</span>
-                    </div>
                 </div>
 
                 {/* Desktop Navigation Menu */}
@@ -130,16 +128,13 @@ export const MainLayout = ({header, children}: MainLayoutProps) => {
 
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
-                <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50"
+                <div className="lg:hidden fixed inset-0 z-50 bg-opacity-50"
                      onClick={() => setIsMobileMenuOpen(false)}>
                     <div className="fixed left-0 top-0 h-full w-64 bg-stone-50 shadow-lg"
                          onClick={(e) => e.stopPropagation()}>
                         <div className="p-4 border-b border-stone-200">
                             <div className="flex items-center space-x-2">
-                                <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center">
-                                    <span className="text-white font-bold text-sm">{header.charAt(0)}</span>
-                                </div>
-                                <span className="font-semibold text-stone-800 text-lg">{header}</span>
+                                <img src="/images/logo.png" alt="Logo" className="h-12" />
                             </div>
                         </div>
                         <nav className="p-4 space-y-2">
