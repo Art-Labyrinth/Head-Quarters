@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {ChevronDown, GraduationCap, Heart, Home, LogOut, Menu, Search, Ticket, User, X} from 'lucide-react';
+import {ChevronDown, GraduationCap, Heart, Home, LogOut, Menu, Search, Ticket, X} from 'lucide-react';
 import {usePageTitle} from '../../../shared/lib';
 import {useNavigate} from "react-router-dom";
 import {useUserStore} from "../../../entities/user";
@@ -108,12 +108,12 @@ export const MainLayout = ({header, children}: MainLayoutProps) => {
                         {isUserMenuOpen && (
                             <div
                                 className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-stone-200 py-1 z-50">
-                                <button
-                                    className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors" onClick={() => navigate('/profile')}>
-                                    <User size={16}/>
-                                    <span>Profile</span>
-                                </button>
-                                <hr className="my-1 border-stone-200"/>
+                                {/*<button*/}
+                                {/*    className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors" onClick={() => navigate('/profile')}>*/}
+                                {/*    <User size={16}/>*/}
+                                {/*    <span>Profile</span>*/}
+                                {/*</button>*/}
+                                {/*<hr className="my-1 border-stone-200"/>*/}
                                 <button
                                     className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                                     onClick={() => useUserStore.getState().logout(session)}>
