@@ -33,11 +33,19 @@ export function LoginForm() {
         ...(password && { password }),
       };
 
-      await login(sendValues);
+      login(sendValues);
       setStatus({ success: true });
       navigate(loginRedirect);
-    } catch (error: any) {
-      setErrors({ submit: Array.isArray(error) ? error.join('|') : error });
+    } catch (error: unknown) {
+      let errorMessage = 'An unknown error occurred';
+      if (Array.isArray(error)) {
+        errorMessage = error.join('|');
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      setErrors({ submit: errorMessage });
       setStatus({ success: false });
     } finally {
       setSubmitting(false);
