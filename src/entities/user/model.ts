@@ -18,44 +18,41 @@ export interface IUserStore {
     isLoggedIn: boolean,
 }
 
-export const useUserStore = create<IUserStore>((set, get) => ({
-  session: JSON.parse(localStorage.getItem(LOCALSTORAGE_SESSION_KEY)!) ?? null,
+export const useUserStore = create<IUserStore>((set, get) => {
+  const sessionFromStorage = JSON.parse(localStorage.getItem(LOCALSTORAGE_SESSION_KEY)!) ?? null;
 
-  setSession: (session) => {
-    localStorage.setItem(LOCALSTORAGE_SESSION_KEY, JSON.stringify(session))
-    set({ session: session })
+  return {
+    session: sessionFromStorage,
+    isLoggedIn: !!sessionFromStorage,
+    loginRedirect: '/',
 
-    set({ isLoggedIn: true })
-  },
+    setSession: (session) => {
+      localStorage.setItem(LOCALSTORAGE_SESSION_KEY, JSON.stringify(session));
+      set({ session });
+      set({ isLoggedIn: !!session });
+    },
 
-  login: async (values) => {
-    try {
-      const response = await userAuth(values)
-
-      if (!axios.isAxiosError(response)) {
-        const session = response?.data
-
-        if (!axios.isAxiosError(session) && session) {
-          get().setSession(session)
+    login: async (values) => {
+      try {
+        const response = await userAuth(values);
+        if (!axios.isAxiosError(response)) {
+          const session = response?.data;
+          if (session) {
+            get().setSession(session);
+          }
         }
+      } catch (error) {
+        let errorText = t('global:Unknown error');
+        if (axios.isAxiosError(error)) {
+          errorText = error.response?.data.detail;
+        }
+        throw errorText;
       }
-    } catch (error) {
-      let errorText = t('global:Unknown error')
+    },
 
-      if (axios.isAxiosError(error)) {
-        errorText = error.response?.data.detail
-      }
-
-      throw errorText
-    }
-  },
-
-  logout: () => {
-    localStorage.removeItem(LOCALSTORAGE_SESSION_KEY)
-    set({ session: null })
-
-    set({ isLoggedIn: false })
-  },
-  loginRedirect: '/',
-  isLoggedIn: !!localStorage.getItem(LOCALSTORAGE_SESSION_KEY),
-}))
+    logout: () => {
+      localStorage.removeItem(LOCALSTORAGE_SESSION_KEY);
+      set({ session: null, isLoggedIn: false });
+    },
+  };
+});
