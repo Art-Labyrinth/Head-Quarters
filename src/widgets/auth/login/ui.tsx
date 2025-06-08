@@ -5,10 +5,19 @@ import * as Yup from 'yup';
 
 import { useUserStore } from '../../../entities/user';
 import type { LoginForm as LoginFormType } from './types';
+import {useEffect} from "react";
 
 export function LoginForm() {
+  const { login } = useUserStore();
+
   const navigate = useNavigate();
-  const { login, loginRedirect } = useUserStore();
+  const isLoggedIn = useUserStore(state => state.isLoggedIn);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/');
+    }
+  }, [isLoggedIn, navigate]);
 
   const initialValues: LoginFormType = {
     username: '',
@@ -35,7 +44,6 @@ export function LoginForm() {
 
       login(sendValues);
       setStatus({ success: true });
-      navigate(loginRedirect);
     } catch (error: unknown) {
       let errorMessage = 'An unknown error occurred';
       if (Array.isArray(error)) {
