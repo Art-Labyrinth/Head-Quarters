@@ -13,8 +13,6 @@ export function LoginForm() {
   const navigate = useNavigate();
   const isLoggedIn = useUserStore(state => state.isLoggedIn);
 
-  console.log('LoginForm isLoggedIn', isLoggedIn);
-
   useEffect(() => {
     if (isLoggedIn) {
       navigate('/');
