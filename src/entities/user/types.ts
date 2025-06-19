@@ -6,6 +6,7 @@ export type AuthResponseData = {
     "role_id": number,
     "role": UserRole,
     "redirect_url": string
+    "exp": number
 }
 
 export enum TokenType {
