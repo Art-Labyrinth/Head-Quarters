@@ -23,7 +23,7 @@ export const useUserStore = create<IUserStore>((set, get) => {
 
   return {
     session: sessionFromStorage,
-    isLoggedIn: !!sessionFromStorage,
+    isLoggedIn: !!sessionFromStorage && new Date(sessionFromStorage.exp * 1000) > new Date(),
     loginRedirect: '/',
 
     setSession: (session) => {

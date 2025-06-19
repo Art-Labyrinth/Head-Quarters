@@ -22,6 +22,7 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           <Route path="/" element={<PrivateRoute isAllowed={isLoggedIn}><Dashboard /></PrivateRoute>}/>
+          <Route path="/dashboard" element={<PrivateRoute isAllowed={isLoggedIn}><Dashboard /></PrivateRoute>}/>
           <Route path="/volunteers" element={<PrivateRoute isAllowed={isLoggedIn}><VolunteerPage /></PrivateRoute>} />
           <Route path="/masters" element={<PrivateRoute isAllowed={isLoggedIn}><MasterPage /></PrivateRoute>} >
             <Route path=":id" element={<PrivateRoute isAllowed={isLoggedIn}><MasterPage /></PrivateRoute>} />

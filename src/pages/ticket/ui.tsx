@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo} from 'react';
+import React, {useEffect, useMemo, useCallback} from 'react';
 import {useSearchParams} from "react-router-dom";
 import debounce from 'debounce'
 
@@ -7,24 +7,37 @@ import {useTicketListStore} from "../../entities/ticket";
 import {TicketTable} from "../../widgets/ticket";
 
 export const TicketPage: React.FC = () => {
-    const [search] = useSearchParams()
-    const { getList } = useTicketListStore()
+    const [searchParams, setSearchParams] = useSearchParams();
+    const { getList, count } = useTicketListStore();
+    const itemsPerPage = 10;
+    const currentPage = Number(searchParams.get('page')) || 1;
+
+    const fetchList = useCallback(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('offset', String((currentPage - 1) * itemsPerPage));
+        params.set('limit', String(itemsPerPage));
+        getList(params);
+    }, [getList, searchParams, currentPage]);
 
     const debouncedResults = useMemo(() => {
-        return debounce(() => getList(search), 300)
-    }, [getList, search])
+        return debounce(fetchList, 300);
+    }, [fetchList]);
 
     useEffect(() => {
-        debouncedResults()
-
+        debouncedResults();
         return () => {
-            debouncedResults.clear()
+            debouncedResults.clear();
         }
-    }, [debouncedResults])
+    }, [debouncedResults]);
 
     return (
         <MainLayout header={'Tickets'}>
-            <TicketTable/>
+            <TicketTable
+                currentPage={currentPage}
+                setCurrentPage={(page: number) => setSearchParams({ ...Object.fromEntries(searchParams.entries()), page: String(page) })}
+                itemsPerPage={itemsPerPage}
+                totalCount={count}
+            />
         </MainLayout>
     )
 };
