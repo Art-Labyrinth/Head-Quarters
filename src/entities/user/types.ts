@@ -17,5 +17,5 @@ export enum UserRole {
     admin = "admin",
     volunteer = "volunteer",
     master = "master",
-    tickets = "tickets",
+    tickets = "ticket",
 }
