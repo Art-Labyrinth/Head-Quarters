@@ -11,3 +11,6 @@ export const updateTicket = async (id: number, data: Partial<Record<string, unkn
       'Content-Type': 'application/json',
     },
   })
+
+export const deleteTicket = async (id: number): Promise<AxiosResponse | AxiosError> =>
+  request.delete(`/tickets/${id}`)

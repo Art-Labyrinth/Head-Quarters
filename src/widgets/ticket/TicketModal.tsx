@@ -1,28 +1,28 @@
 import React, { useState } from "react";
 import { Ticket } from "../../entities/ticket/types";
-import { updateTicket } from "../../entities/ticket/api";
+import { updateTicket, deleteTicket } from "../../entities/ticket/api";
 
 interface TicketModalProps {
     ticket: Ticket;
     onClose: () => void;
-    onDelete: () => void;
 }
 
-export const TicketModal: React.FC<TicketModalProps> = ({ ticket, onClose, onDelete }) => {
+export const TicketModal: React.FC<TicketModalProps> = ({ ticket, onClose }) => {
     const [isEdit, setIsEdit] = useState(false);
     const [form, setForm] = useState({
-        name: ticket.name,
-        email: ticket.email,
-        phone: ticket.phone,
-        comment: ticket.comment,
-        active: ticket.active,
-        is_used: ticket.is_used,
-        is_sold: ticket.is_sold,
+        name: ticket.name || '',
+        email: ticket.email || '',
+        phone: ticket.phone || '',
+        comment: ticket.comment || '',
+        active: !!ticket.active,
+        is_used: !!ticket.is_used,
+        is_sold: !!ticket.is_sold,
+        language: "en",
+        send_email: false,
+        send_tg: false,
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [sendToEmail, setSendToEmail] = useState(false);
-    const [sendToTelegram, setSendToTelegram] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
@@ -37,15 +37,27 @@ export const TicketModal: React.FC<TicketModalProps> = ({ ticket, onClose, onDel
         setError(null);
         try {
             await updateTicket(ticket.id, form);
+            Object.assign(ticket, form);
             setIsEdit(false);
         } catch (e: unknown) {
             if (e instanceof Error) {
                 setError(e.message);
             } else {
-                setError("Ошибка при сохранении");
+                setError("An error while maintaining");
             }
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm("Are you sure you want to delete this ticket?")) return;
+        try {
+            await deleteTicket(ticket.id);
+            onClose();
+        } catch (e) {
+            alert("Error when removing");
+            console.error("Delete ticket error:", e);
         }
     };
 
@@ -65,6 +77,14 @@ export const TicketModal: React.FC<TicketModalProps> = ({ ticket, onClose, onDel
                     {isEdit ? (
                         <>
                             <form className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="border-b border-stone-200 pb-2">
+                                    <dt className="text-sm font-medium text-stone-500 capitalize mb-1">ID</dt>
+                                    <dd className="text-sm text-stone-900 break-words">{ticket.id === null ? "-" : String(ticket.id)}</dd>
+                                </div>
+                                <div className="border-b border-stone-200 pb-2">
+                                    <dt className="text-sm font-medium text-stone-500 capitalize mb-1">Ticked code</dt>
+                                    <dd className="text-sm text-stone-900 break-words">{ticket.ticket_id}</dd>
+                                </div>
                                 <div className="border-b border-stone-200 pb-2">
                                     <label className="text-sm font-medium text-stone-500 capitalize mb-1">
                                         <span className="px-2">Name</span>
@@ -110,20 +130,24 @@ export const TicketModal: React.FC<TicketModalProps> = ({ ticket, onClose, onDel
                             </form>
                             <div className="mt-4 p-4 bg-stone-50 rounded border border-stone-200 flex flex-col gap-2">
                                 <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={sendToEmail}
-                                        onChange={e => setSendToEmail(e.target.checked)}
-                                    />
+                                    <input type="checkbox" name="send_email" checked={!!form.send_email} onChange={handleChange} />
                                     <span>Send ticket to email</span>
                                 </label>
                                 <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={sendToTelegram}
-                                        onChange={e => setSendToTelegram(e.target.checked)}
-                                    />
+                                    <input type="checkbox" name="send_tg" checked={!!form.send_tg} onChange={handleChange} />
                                     <span>Send ticket to Telegram</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <span>Language:</span>
+                                    <select
+                                        value={form.language}
+                                        onChange={(e) => setForm((prev) => ({ ...prev, language: e.target.value }))}
+                                        className="border rounded p-1"
+                                    >
+                                        <option value="ru">Russian</option>
+                                        <option value="ro">Romanian</option>
+                                        <option value="en">English</option>
+                                    </select>
                                 </label>
                             </div>
                         </>
@@ -134,16 +158,16 @@ export const TicketModal: React.FC<TicketModalProps> = ({ ticket, onClose, onDel
                                 <dd className="text-sm text-stone-900 break-words">{ticket.id === null ? "-" : String(ticket.id)}</dd>
                             </div>
                             <div className="border-b border-stone-200 pb-2">
-                                <dt className="text-sm font-medium text-stone-500 capitalize mb-1">Active</dt>
-                                <dd className="text-sm text-stone-900 break-words">{ticket.active === null ? "No" : ticket.active ? "Yes" : "No"}</dd>
+                                <dt className="text-sm font-medium text-stone-500 capitalize mb-1">Ticked code</dt>
+                                <dd className="text-sm text-stone-900 break-words">{ticket.ticket_id}</dd>
                             </div>
                             <div className="border-b border-stone-200 pb-2">
                                 <dt className="text-sm font-medium text-stone-500 capitalize mb-1">Name</dt>
                                 <dd className="text-sm text-stone-900 break-words">{ticket.name === null ? "-" : ticket.name}</dd>
                             </div>
                             <div className="border-b border-stone-200 pb-2">
-                                <dt className="text-sm font-medium text-stone-500 capitalize mb-1">Ticked code</dt>
-                                <dd className="text-sm text-stone-900 break-words">{ticket.ticket_id}</dd>
+                                <dt className="text-sm font-medium text-stone-500 capitalize mb-1">Active</dt>
+                                <dd className="text-sm text-stone-900 break-words">{ticket.active === null ? "No" : ticket.active ? "Yes" : "No"}</dd>
                             </div>
                             <div className="border-b border-stone-200 pb-2">
                                 <dt className="text-sm font-medium text-stone-500 capitalize mb-1">Email</dt>
@@ -176,7 +200,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({ ticket, onClose, onDel
                         <div>
                             {!isEdit && (
                                 <button
-                                    onClick={onDelete}
+                                    onClick={handleDelete}
                                     className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                                 >
                                     Delete
