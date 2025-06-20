@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { useTicketListStore } from "../../entities/ticket";
 import { Ticket } from "../../entities/ticket/types.ts";
@@ -15,7 +15,7 @@ interface TicketTableProps {
 export function TicketTable({ currentPage = 1, setCurrentPage, itemsPerPage = 20, totalCount }: Partial<TicketTableProps> = {}) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-    const { list } = useTicketListStore();
+    const { list, getList } = useTicketListStore();
 
     const filteredData = useMemo(() => {
         const search = searchTerm.toLowerCase();
@@ -29,11 +29,21 @@ export function TicketTable({ currentPage = 1, setCurrentPage, itemsPerPage = 20
 
     const totalPages = totalCount ? Math.ceil(totalCount / itemsPerPage) : 1;
 
-    const handleDelete = () => {
-        const confirmed = window.confirm("Are you sure you want to delete this ticket?");
-        if (confirmed) {
-            setSelectedTicket(null);
-        }
+    function getSearchParams(currentPage: number, itemsPerPage: number, searchTerm: string) {
+        const params = new URLSearchParams();
+        params.set("offset", String(((currentPage || 1) - 1) * itemsPerPage));
+        params.set("limit", String(itemsPerPage));
+        if (searchTerm) params.set("search", searchTerm);
+        return params;
+    }
+
+    useEffect(() => {
+        getList(getSearchParams(currentPage, itemsPerPage, searchTerm));
+    }, [currentPage, getList, itemsPerPage, searchTerm]);
+
+    const onCloseModal = async () => {
+        await getList(getSearchParams(currentPage, itemsPerPage, searchTerm));
+        setSelectedTicket(null);
     };
 
     return (
@@ -57,7 +67,7 @@ export function TicketTable({ currentPage = 1, setCurrentPage, itemsPerPage = 20
                                 />
                                 <input
                                     type="text"
-                                    placeholder="Search by Ticket ID or Comment..."
+                                    placeholder="Search by prefix Ticket ID"
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
@@ -129,8 +139,7 @@ export function TicketTable({ currentPage = 1, setCurrentPage, itemsPerPage = 20
             {selectedTicket && (
                 <TicketModal
                     ticket={selectedTicket}
-                    onClose={() => setSelectedTicket(null)}
-                    onDelete={handleDelete}
+                    onClose={onCloseModal}
                 />
             )}
         </div>
