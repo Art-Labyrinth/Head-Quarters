@@ -8,16 +8,16 @@ import type { LoginForm as LoginFormType } from './types';
 import {useEffect} from "react";
 
 export function LoginForm() {
-  const { login } = useUserStore();
+  const { login, session } = useUserStore();
 
   const navigate = useNavigate();
   const isLoggedIn = useUserStore(state => state.isLoggedIn);
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate('/');
+      navigate('/' + session?.redirect_url);
     }
-  }, [isLoggedIn, navigate]);
+  }, [isLoggedIn, navigate, session]);
 
   const initialValues: LoginFormType = {
     username: '',
