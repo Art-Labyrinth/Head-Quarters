@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { useTicketListStore } from "../../entities/ticket";
 import { Ticket } from "../../entities/ticket/types.ts";
 import { TicketModal } from "./TicketModal";
+import { CreateTicketModal } from "./CreateTicketModal";
 import { Pagination } from "./Pagination";
 
 interface TicketTableProps {
@@ -15,6 +16,7 @@ interface TicketTableProps {
 export function TicketTable({ currentPage = 1, setCurrentPage, itemsPerPage = 20, totalCount }: Partial<TicketTableProps> = {}) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+    const [showCreateModal, setShowCreateModal] = useState(false);
     const { list, getList } = useTicketListStore();
 
     const filteredData = useMemo(() => {
@@ -44,6 +46,11 @@ export function TicketTable({ currentPage = 1, setCurrentPage, itemsPerPage = 20
     const onCloseModal = async () => {
         await getList(getSearchParams(currentPage, itemsPerPage, searchTerm));
         setSelectedTicket(null);
+    };
+
+    const onCloseCreateModal = async () => {
+        await getList(getSearchParams(currentPage, itemsPerPage, searchTerm));
+        setShowCreateModal(false);
     };
 
     return (
@@ -76,6 +83,13 @@ export function TicketTable({ currentPage = 1, setCurrentPage, itemsPerPage = 20
                                     className="w-full pl-10 pr-4 py-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                 />
                             </div>
+                            <button
+                                onClick={() => setShowCreateModal(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 whitespace-nowrap"
+                            >
+                                <Plus size={16} />
+                                New Ticket
+                            </button>
                         </div>
                     </div>
 
@@ -140,6 +154,13 @@ export function TicketTable({ currentPage = 1, setCurrentPage, itemsPerPage = 20
                 <TicketModal
                     ticket={selectedTicket}
                     onClose={onCloseModal}
+                />
+            )}
+
+            {/* Create Ticket Modal */}
+            {showCreateModal && (
+                <CreateTicketModal
+                    onClose={onCloseCreateModal}
                 />
             )}
         </div>
