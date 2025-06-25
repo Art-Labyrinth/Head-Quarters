@@ -1,7 +1,9 @@
+name: al-hq
+
 services:
-  hq-art-lab:
+  al-hq:
     build: .
-    container_name: hq-art-lab
+    container_name: al-hq
     restart: unless-stopped
     ports:
       - 127.0.0.1:3004:80
