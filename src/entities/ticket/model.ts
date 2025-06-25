@@ -5,7 +5,7 @@ import { getTicketList } from './api.ts'
 import {Ticket} from "./types.ts";
 
 export type TicketListStore = {
-  list: Ticket[] | null,
+  list: Ticket[] | [],
   listError: null,
   listLoading: boolean,
   count: number,
@@ -14,14 +14,14 @@ export type TicketListStore = {
 }
 
 export const useTicketListStore = create<TicketListStore>((set) => ({
-  list: null,
+  list: [],
   listError: null,
   listLoading: false,
   count: 0,
 
   getList: async (search) => {
     try {
-      set({ list: null })
+      set({ list: [] })
       set({ listError: null })
       set({ listLoading: true })
 

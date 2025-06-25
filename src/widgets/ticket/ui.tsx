@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, Plus } from "lucide-react";
 import { useTicketListStore } from "../../entities/ticket";
 import { Ticket } from "../../entities/ticket/types.ts";
@@ -18,16 +18,6 @@ export function TicketTable({ currentPage = 1, setCurrentPage, itemsPerPage = 20
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const { list, getList } = useTicketListStore();
-
-    const filteredData = useMemo(() => {
-        const search = searchTerm.toLowerCase();
-        return list?.filter((ticket) => {
-            return (
-                (ticket.ticket_id || "").toLowerCase().includes(search) ||
-                (ticket.comment || "").toLowerCase().includes(search)
-            );
-        }) || [];
-    }, [list, searchTerm]);
 
     const totalPages = totalCount ? Math.ceil(totalCount / itemsPerPage) : 1;
 
@@ -107,7 +97,7 @@ export function TicketTable({ currentPage = 1, setCurrentPage, itemsPerPage = 20
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-stone-200">
-                                    {filteredData.map((ticket) => (
+                                    {list.map((ticket) => (
                                         <tr
                                             key={ticket.id}
                                             className="hover:bg-stone-200 cursor-pointer text-sm text-stone-700"
@@ -130,13 +120,13 @@ export function TicketTable({ currentPage = 1, setCurrentPage, itemsPerPage = 20
                                 <p className="text-sm text-stone-700">
                                     Showing{" "}
                                     <span className="font-medium">
-                                        {Math.min(((currentPage || 1) - 1) * itemsPerPage + 1, filteredData.length)}
+                                        {Math.min(((currentPage || 1) - 1) * itemsPerPage + 1, list.length)}
                                     </span>{" "}
                                     to{" "}
                                     <span className="font-medium">
-                                        {Math.min((currentPage || 1) * itemsPerPage, filteredData.length)}
+                                        {Math.min((currentPage || 1) * itemsPerPage, list.length)}
                                     </span>{" "}
-                                    of <span className="font-medium">{filteredData.length}</span> results
+                                    of <span className="font-medium">{totalCount}</span> results
                                 </p>
                                 <Pagination
                                     currentPage={currentPage || 1}
