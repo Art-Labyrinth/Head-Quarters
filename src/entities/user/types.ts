@@ -14,7 +14,7 @@ export enum TokenType {
 }
 
 export enum UserRole {
-    admin = "admin",
+    admin = "Admin",
     volunteer = "volunteer",
     master = "master",
     tickets = "ticket",
