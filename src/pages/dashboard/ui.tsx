@@ -2,7 +2,9 @@ import React, {useState} from 'react';
 import {MainLayout} from "../../widgets/layouts/main";
 import {useUserStore} from "../../entities/user";
 
+
 import {UserRole} from "../../entities/user/types";
+import {downloadQRCodes} from "../../entities/ticket/api.qr";
 
 export const Dashboard: React.FC = () => {
     const {session} = useUserStore()
@@ -17,34 +19,21 @@ export const Dashboard: React.FC = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const params = new URLSearchParams({
+            const result = await downloadQRCodes({
                 prefix,
-                part: String(part),
-                quantity: String(quantity),
-            });
-            const url = `http://localhost:8000/tickets/generate_qr_code?${params.toString()}`;
-            const token = session?.access_token;
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'accept': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-                },
-            });
-            if (!response.ok) throw new Error('File download error');
-            const blob = await response.blob();
-            const contentDisposition = response.headers.get('content-disposition');
-            let filename = 'qr_codes.zip';
-            if (contentDisposition) {
-                const match = contentDisposition.match(/filename\s*=\s*"?([^";\s]+)"?/i);
-                if (match) filename = match[1];
+                part,
+                quantity,
+            }, session?.access_token);
+            if ('blob' in result && 'filename' in result) {
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(result.blob);
+                link.download = result.filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            } else {
+                throw result;
             }
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
         } catch (err) {
             console.error(err);
             alert('File download error');
