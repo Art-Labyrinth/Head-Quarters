@@ -15,7 +15,8 @@ export function LoginForm() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate('/' + session?.redirect_url);
+      const target = session?.redirect_url ? `/${session.redirect_url}` : '/';
+      navigate(target);
     }
   }, [isLoggedIn, navigate, session]);
 
@@ -42,7 +43,7 @@ export function LoginForm() {
         ...(password && { password }),
       };
 
-      login(sendValues);
+      await login(sendValues);
       setStatus({ success: true });
     } catch (error: unknown) {
       let errorMessage = 'An unknown error occurred';
@@ -68,6 +69,7 @@ export function LoginForm() {
       >
         {({
             errors,
+            status,
             handleBlur,
             handleChange,
             handleSubmit,
@@ -118,11 +120,11 @@ export function LoginForm() {
               </div>
 
               {/* Error Display */}
-              {touched.submit && Object.keys(errors).length > 0 && (
+              {(Object.keys(errors).length > 0 || status?.success === false) && (
                   <div className="rounded-md bg-red-100 p-4 text-sm text-red-700 space-y-2">
                     {errors.username && touched.username && <div>{errors.username}</div>}
                     {errors.password && touched.password && <div>{errors.password}</div>}
-                    {errors.submit && touched.submit && (
+                    {errors.submit && (
                         <div className="space-y-1">
                           {errors.submit.split('|').map((item: string) => (
                               <div key={item}>{item}</div>
