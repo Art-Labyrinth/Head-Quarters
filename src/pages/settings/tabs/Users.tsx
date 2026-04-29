@@ -66,12 +66,12 @@ type CreateUserModalProps = {
   isOpen: boolean
   roles: Role[]
   onClose: () => void
-  onSubmit: (data: {username: string, role_id?: number}) => Promise<void>
+  onSubmit: (data: {username: string, password: string, role_id?: number}) => Promise<void>
   isSubmitting?: boolean
 }
 
 const CreateUserModal: React.FC<CreateUserModalProps> = ({isOpen, roles, onClose, onSubmit, isSubmitting}) => {
-  const [formData, setFormData] = useState<{username: string, role_id: string}>({username: '', role_id: ''})
+  const [formData, setFormData] = useState<{username: string, password: string, role_id: string}>({username: '', password: '', role_id: ''})
   const [error, setError] = useState<string | null>(null)
 
   if (!isOpen) return null
@@ -81,19 +81,25 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({isOpen, roles, onClose
     setError(null)
 
     if (!formData.username.trim()) {
-      setError('Имя пользователя обязательно.')
+      setError('Username is required.')
+      return
+    }
+
+    if (!formData.password.trim()) {
+      setError('Password required.')
       return
     }
 
     try {
       await onSubmit({
         username: formData.username,
+        password: formData.password,
         role_id: formData.role_id ? Number(formData.role_id) : undefined,
       })
-      setFormData({username: '', role_id: ''})
+      setFormData({username: '', password: '', role_id: ''})
       onClose()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Ошибка при создании пользователя.')
+      setError(e instanceof Error ? e.message : 'Error creating user.')
     }
   }
 
@@ -124,6 +130,20 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({isOpen, roles, onClose
                 onChange={(e) => setFormData({...formData, username: e.target.value})}
                 className="w-full px-3 py-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                 placeholder="Введите имя пользователя"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">
+                Пароль
+              </label>
+              <input
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                className="w-full px-3 py-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                placeholder="Введите пароль"
                 disabled={isSubmitting}
               />
             </div>
@@ -366,7 +386,7 @@ export const UsersManagement: React.FC = () => {
     void loadRoles()
   }, [loadRoles])
 
-  const handleCreateUser = async (data: {username: string, role_id?: number}) => {
+  const handleCreateUser = async (data: {username: string, password: string, role_id?: number}) => {
     if (!canEditOrCreate) {
       throw new Error('Недостаточно прав для создания пользователей.')
     }
