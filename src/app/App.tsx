@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -11,9 +11,29 @@ import {NotFound} from "../pages/not-found";
 import {VolunteerPage} from "../pages/volunteer";
 import {MasterPage} from "../pages/master";
 import {TicketPage} from "../pages/ticket";
+import {SettingsPage} from "../pages/settings";
+import {canAccessDashboard, canAccessSettings, hasModuleRight} from '../shared/lib/permissions';
 
 function App() {
-  const { isLoggedIn } = useUserStore()
+  const { isLoggedIn, session } = useUserStore()
+
+  const canDashboardPage = canAccessDashboard(session)
+  const canMastersPage = hasModuleRight(session, 'masters', 1)
+  const canVolunteersPage = hasModuleRight(session, 'volunteers', 1)
+  const canTicketsPage = hasModuleRight(session, 'tickets', 1)
+  const canSettingsPage = canAccessSettings(session)
+
+  const defaultRoute = canDashboardPage
+    ? '/dashboard'
+    : canMastersPage
+      ? '/masters'
+      : canVolunteersPage
+        ? '/volunteers'
+        : canTicketsPage
+          ? '/tickets'
+          : canSettingsPage
+            ? '/settings'
+            : '/login'
 
   return (
     <>
@@ -21,13 +41,14 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
 
-          <Route path="/" element={<PrivateRoute isAllowed={isLoggedIn}><Dashboard /></PrivateRoute>}/>
-          <Route path="/dashboard" element={<PrivateRoute isAllowed={isLoggedIn}><Dashboard /></PrivateRoute>}/>
-          <Route path="/volunteers" element={<PrivateRoute isAllowed={isLoggedIn}><VolunteerPage /></PrivateRoute>} />
-          <Route path="/masters" element={<PrivateRoute isAllowed={isLoggedIn}><MasterPage /></PrivateRoute>} >
-            <Route path=":id" element={<PrivateRoute isAllowed={isLoggedIn}><MasterPage /></PrivateRoute>} />
+          <Route path="/" element={<PrivateRoute isAllowed={isLoggedIn}>{canDashboardPage ? <Dashboard /> : <Navigate to={defaultRoute} />}</PrivateRoute>}/>
+          <Route path="/dashboard" element={<PrivateRoute isAllowed={isLoggedIn}>{canDashboardPage ? <Dashboard /> : <Navigate to={defaultRoute} />}</PrivateRoute>}/>
+          <Route path="/volunteers" element={<PrivateRoute isAllowed={isLoggedIn}>{canVolunteersPage ? <VolunteerPage /> : <NotFound />}</PrivateRoute>} />
+          <Route path="/masters" element={<PrivateRoute isAllowed={isLoggedIn}>{canMastersPage ? <MasterPage /> : <NotFound />}</PrivateRoute>} >
+            <Route path=":id" element={<PrivateRoute isAllowed={isLoggedIn}>{canMastersPage ? <MasterPage /> : <NotFound />}</PrivateRoute>} />
           </Route>
-          <Route path="/tickets" element={<PrivateRoute isAllowed={isLoggedIn}><TicketPage /></PrivateRoute>} />
+          <Route path="/tickets" element={<PrivateRoute isAllowed={isLoggedIn}>{canTicketsPage ? <TicketPage /> : <NotFound />}</PrivateRoute>} />
+          <Route path="/settings" element={<PrivateRoute isAllowed={isLoggedIn}>{canSettingsPage ? <SettingsPage /> : <NotFound />}</PrivateRoute>} />
           <Route path="*" element={<NotFound/>}/>
         </Routes>
       </Router>

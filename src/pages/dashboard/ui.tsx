@@ -3,8 +3,8 @@ import {ChevronDown} from 'lucide-react';
 
 import {MainLayout} from "../../widgets/layouts/main";
 import {useUserStore} from "../../entities/user";
-import {UserRole} from "../../entities/user/types";
 import {downloadExistingTickets, downloadQRCodes} from "../../entities/ticket/api.qr";
+import {canAccessQrGeneration, canAccessTicketsArchive} from '../../shared/lib';
 
 type TicketArchivePayload = {
     ids?: number[];
@@ -29,6 +29,8 @@ const triggerFileDownload = (blob: Blob, filename: string) => {
 
 export const Dashboard: React.FC = () => {
     const {session} = useUserStore()
+    const canUseQrGeneration = canAccessQrGeneration(session)
+    const canUseTicketArchive = canAccessTicketsArchive(session)
 
     const [prefix, setPrefix] = useState('GST');
     const [part, setPart] = useState(10);
@@ -157,111 +159,115 @@ export const Dashboard: React.FC = () => {
                 <p className="text-stone-600">Here's what's happening with your dashboard today.</p>
             </div>
 
-            {session?.role === UserRole.admin && (
+            {(canUseQrGeneration || canUseTicketArchive) && (
                 <div className="space-y-4 max-w-2xl">
-                    <details className="bg-stone-50 border border-stone-200 rounded-lg p-4 group">
-                        <summary className="list-none cursor-pointer flex items-center justify-between gap-3">
-                            <div>
-                                <h2 className="text-lg font-semibold text-stone-800">Debug: QR Code Generation</h2>
-                                <p className="text-sm text-stone-500">Generate a new QR archive.</p>
-                            </div>
-                            <ChevronDown className="text-stone-500 transition-transform group-open:rotate-180" size={18} />
-                        </summary>
+                    {canUseQrGeneration && (
+                        <details className="bg-stone-50 border border-stone-200 rounded-lg p-4 group">
+                            <summary className="list-none cursor-pointer flex items-center justify-between gap-3">
+                                <div>
+                                    <h2 className="text-lg font-semibold text-stone-800">Debug: QR Code Generation</h2>
+                                    <p className="text-sm text-stone-500">Generate a new QR archive.</p>
+                                </div>
+                                <ChevronDown className="text-stone-500 transition-transform group-open:rotate-180" size={18} />
+                            </summary>
 
-                        <form className="flex flex-col gap-3 mt-4" onSubmit={handleDownload}>
-                            <div className="flex gap-2 items-center">
-                                <label className="w-24 font-medium">Prefix:</label>
-                                <input type="text" value={prefix} onChange={e => setPrefix(e.target.value)} className="border rounded px-2 py-1 flex-1" required />
-                            </div>
-                            <div className="flex gap-2 items-center">
-                                <label className="w-24 font-medium">Part:</label>
-                                <input type="number" value={part} min={1} onChange={e => setPart(Number(e.target.value))} className="border rounded px-2 py-1 flex-1" required />
-                            </div>
-                            <div className="flex gap-2 items-center">
-                                <label className="w-24 font-medium">Quantity:</label>
-                                <input type="number" value={quantity} min={1} onChange={e => setQuantity(Number(e.target.value))} className="border rounded px-2 py-1 flex-1" required />
-                            </div>
-                            <button type="submit" className="mt-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-60" disabled={loading}>
-                                {loading ? 'Downloading...' : 'Generate and Download'}
-                            </button>
-                        </form>
-                    </details>
-
-                    <details className="bg-stone-50 border border-stone-200 rounded-lg p-4 group">
-                        <summary className="list-none cursor-pointer flex items-center justify-between gap-3">
-                            <div>
-                                <h2 className="text-lg font-semibold text-stone-800">Debug: Existing Tickets Archive</h2>
-                                <p className="text-sm text-stone-500">Download already created tickets by one filter only.</p>
-                            </div>
-                            <ChevronDown className="text-stone-500 transition-transform group-open:rotate-180" size={18} />
-                        </summary>
-
-                        <form className="flex flex-col gap-3 mt-4" onSubmit={handleArchiveDownload}>
-                            <p className="text-sm text-stone-500">
-                                Fill only one variant: <strong>ids</strong>, <strong>ticket IDs</strong>, or <strong>range</strong>.
-                            </p>
-
-                            <div className="flex gap-2 items-center">
-                                <label className="w-24 font-medium">IDs:</label>
-                                <input
-                                    type="text"
-                                    value={idsInput}
-                                    onChange={e => setIdsInput(e.target.value)}
-                                    placeholder="1, 2, 3"
-                                    className="border rounded px-2 py-1 flex-1"
-                                />
-                            </div>
-
-                            <div className="flex gap-2 items-center">
-                                <label className="w-24 font-medium">Ticket IDs:</label>
-                                <input
-                                    type="text"
-                                    value={ticketIdsInput}
-                                    onChange={e => setTicketIdsInput(e.target.value)}
-                                    placeholder="GST-10-1, GST-10-2"
-                                    className="border rounded px-2 py-1 flex-1"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <form className="flex flex-col gap-3 mt-4" onSubmit={handleDownload}>
                                 <div className="flex gap-2 items-center">
-                                    <label className="w-24 font-medium">From:</label>
+                                    <label className="w-24 font-medium">Prefix:</label>
+                                    <input type="text" value={prefix} onChange={e => setPrefix(e.target.value)} className="border rounded px-2 py-1 flex-1" required />
+                                </div>
+                                <div className="flex gap-2 items-center">
+                                    <label className="w-24 font-medium">Part:</label>
+                                    <input type="number" value={part} min={1} onChange={e => setPart(Number(e.target.value))} className="border rounded px-2 py-1 flex-1" required />
+                                </div>
+                                <div className="flex gap-2 items-center">
+                                    <label className="w-24 font-medium">Quantity:</label>
+                                    <input type="number" value={quantity} min={1} onChange={e => setQuantity(Number(e.target.value))} className="border rounded px-2 py-1 flex-1" required />
+                                </div>
+                                <button type="submit" className="mt-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-60" disabled={loading}>
+                                    {loading ? 'Downloading...' : 'Generate and Download'}
+                                </button>
+                            </form>
+                        </details>
+                    )}
+
+                    {canUseTicketArchive && (
+                        <details className="bg-stone-50 border border-stone-200 rounded-lg p-4 group">
+                            <summary className="list-none cursor-pointer flex items-center justify-between gap-3">
+                                <div>
+                                    <h2 className="text-lg font-semibold text-stone-800">Debug: Existing Tickets Archive</h2>
+                                    <p className="text-sm text-stone-500">Download already created tickets by one filter only.</p>
+                                </div>
+                                <ChevronDown className="text-stone-500 transition-transform group-open:rotate-180" size={18} />
+                            </summary>
+
+                            <form className="flex flex-col gap-3 mt-4" onSubmit={handleArchiveDownload}>
+                                <p className="text-sm text-stone-500">
+                                    Fill only one variant: <strong>ids</strong>, <strong>ticket IDs</strong>, or <strong>range</strong>.
+                                </p>
+
+                                <div className="flex gap-2 items-center">
+                                    <label className="w-24 font-medium">IDs:</label>
                                     <input
-                                        type="number"
-                                        min={1}
-                                        value={rangeFrom}
-                                        onChange={e => setRangeFrom(e.target.value)}
-                                        placeholder="100"
+                                        type="text"
+                                        value={idsInput}
+                                        onChange={e => setIdsInput(e.target.value)}
+                                        placeholder="1, 2, 3"
                                         className="border rounded px-2 py-1 flex-1"
                                     />
                                 </div>
+
                                 <div className="flex gap-2 items-center">
-                                    <label className="w-24 font-medium">To:</label>
+                                    <label className="w-24 font-medium">Ticket IDs:</label>
                                     <input
-                                        type="number"
-                                        min={1}
-                                        value={rangeTo}
-                                        onChange={e => setRangeTo(e.target.value)}
-                                        placeholder="200"
+                                        type="text"
+                                        value={ticketIdsInput}
+                                        onChange={e => setTicketIdsInput(e.target.value)}
+                                        placeholder="GST-10-1, GST-10-2"
                                         className="border rounded px-2 py-1 flex-1"
                                     />
                                 </div>
-                            </div>
 
-                            <label className="flex items-center gap-2 text-sm text-stone-700">
-                                <input
-                                    type="checkbox"
-                                    checked={forPrint}
-                                    onChange={e => setForPrint(e.target.checked)}
-                                />
-                                For print
-                            </label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="flex gap-2 items-center">
+                                        <label className="w-24 font-medium">From:</label>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            value={rangeFrom}
+                                            onChange={e => setRangeFrom(e.target.value)}
+                                            placeholder="100"
+                                            className="border rounded px-2 py-1 flex-1"
+                                        />
+                                    </div>
+                                    <div className="flex gap-2 items-center">
+                                        <label className="w-24 font-medium">To:</label>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            value={rangeTo}
+                                            onChange={e => setRangeTo(e.target.value)}
+                                            placeholder="200"
+                                            className="border rounded px-2 py-1 flex-1"
+                                        />
+                                    </div>
+                                </div>
 
-                            <button type="submit" className="mt-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-60" disabled={archiveLoading}>
-                                {archiveLoading ? 'Downloading...' : 'Download Existing Tickets'}
-                            </button>
-                        </form>
-                    </details>
+                                <label className="flex items-center gap-2 text-sm text-stone-700">
+                                    <input
+                                        type="checkbox"
+                                        checked={forPrint}
+                                        onChange={e => setForPrint(e.target.checked)}
+                                    />
+                                    For print
+                                </label>
+
+                                <button type="submit" className="mt-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-60" disabled={archiveLoading}>
+                                    {archiveLoading ? 'Downloading...' : 'Download Existing Tickets'}
+                                </button>
+                            </form>
+                        </details>
+                    )}
                 </div>
             )}
         </MainLayout>
