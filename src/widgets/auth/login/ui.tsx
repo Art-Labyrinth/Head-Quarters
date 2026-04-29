@@ -7,6 +7,29 @@ import { useUserStore } from '../../../entities/user';
 import type { LoginForm as LoginFormType } from './types';
 import {useEffect} from "react";
 
+const getSafeRedirectPath = (rawRedirectUrl?: string): string => {
+  const fallbackPath = '/dashboard'
+
+  if (!rawRedirectUrl || typeof rawRedirectUrl !== 'string') {
+    return fallbackPath
+  }
+
+  const redirectUrl = rawRedirectUrl.trim()
+
+  if (!redirectUrl) {
+    return fallbackPath
+  }
+
+  // Reject protocol-like or protocol-relative values and keep redirects inside SPA routes.
+  if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(redirectUrl) || redirectUrl.startsWith('//')) {
+    return fallbackPath
+  }
+
+  const normalized = redirectUrl.startsWith('/') ? redirectUrl : `/${redirectUrl}`
+
+  return normalized
+}
+
 export function LoginForm() {
   const { login, session } = useUserStore();
 
@@ -15,8 +38,8 @@ export function LoginForm() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      const target = session?.redirect_url ? `/${session.redirect_url}` : '/';
-      navigate(target);
+      const target = getSafeRedirectPath(session?.redirect_url);
+      navigate(target, { replace: true });
     }
   }, [isLoggedIn, navigate, session]);
 
