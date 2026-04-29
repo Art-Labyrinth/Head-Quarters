@@ -8,7 +8,7 @@ import { AuthResponseData } from './types'
 export const userAuth = (
     values: object
 ): Promise<AxiosResponse<AuthResponseData> | AxiosError> => {
-    return request.post('/user/auth', qs.stringify(values), {
+    return request.post('/users/auth', qs.stringify(values), {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },

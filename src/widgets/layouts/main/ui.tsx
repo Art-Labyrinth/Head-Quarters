@@ -1,9 +1,9 @@
 import React, {useState} from 'react';
-import {ChevronDown, GraduationCap, Heart, Home, LogOut, Menu, Search, Ticket, X} from 'lucide-react';
+import {ChevronDown, GraduationCap, Heart, Home, LogOut, Menu, Search, Settings, Ticket, X} from 'lucide-react';
 import {usePageTitle} from '../../../shared/lib';
 import {useNavigate} from "react-router-dom";
 import {useUserStore} from "../../../entities/user";
-import {UserRole} from "../../../entities/user/types.ts";
+import {canAccessDashboard, canAccessSettings, hasModuleRight} from '../../../shared/lib/permissions';
 
 export type MainLayoutProps = {
     header: string,
@@ -17,31 +17,42 @@ export const MainLayout = ({header, children}: MainLayoutProps) => {
     const navigate = useNavigate()
 
     const isRouteActive = (route: string) => window.location.pathname === route
-    const hasPermission = (role: UserRole) => session?.role === role || session?.role === UserRole.admin
+    const canDashboardPage = canAccessDashboard(session)
+    const canMastersPage = hasModuleRight(session, 'masters', 1)
+    const canVolunteersPage = hasModuleRight(session, 'volunteers', 1)
+    const canTicketsPage = hasModuleRight(session, 'tickets', 1)
+    const canSettingsPage = canAccessSettings(session)
 
     const menuItems = [
-        {icon: Home, label: 'Dashboard', route: '/', active: isRouteActive('/'), hasPermission: true},
+        {icon: Home, label: 'Dashboard', route: '/', active: isRouteActive('/'), hasPermission: canDashboardPage},
         {
             icon: GraduationCap,
             label: 'Masters',
             route: '/masters',
             active: isRouteActive('/masters'),
-            hasPermission: hasPermission(UserRole.master)
+            hasPermission: canMastersPage
         },
         {
             icon: Heart,
             label: 'Volunteers',
             route: '/volunteers',
             active: isRouteActive('/volunteers'),
-            hasPermission: hasPermission(UserRole.volunteer)
+            hasPermission: canVolunteersPage
         },
         {
             icon: Ticket,
             label: 'Tickets',
             route: '/tickets',
             active: isRouteActive('/tickets'),
-            hasPermission: hasPermission(UserRole.tickets)
+            hasPermission: canTicketsPage
         },
+        {
+            icon: Settings,
+            label: 'Settings',
+            route: '/settings',
+            active: isRouteActive('/settings'),
+            hasPermission: canSettingsPage
+        }
     ];
 
     usePageTitle(header)

@@ -4,18 +4,17 @@ export type AuthResponseData = {
     "user_id": number,
     "username": string,
     "role_id": number,
-    "role": UserRole,
+    "role": string,
+    "permissions": UserPermissionItem[],
     "redirect_url": string
     "exp": number
 }
 
-export enum TokenType {
-    bearer = "bearer",
+export type UserPermissionItem = {
+    module: string
+    rights: number
 }
 
-export enum UserRole {
-    admin = "Admin",
-    volunteer = "volunteer",
-    master = "master",
-    tickets = "ticket",
+export enum TokenType {
+    bearer = "bearer",
 }
