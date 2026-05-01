@@ -1,275 +1,316 @@
-import React, {useState} from 'react';
-import {ChevronDown} from 'lucide-react';
-
-import {MainLayout} from "../../widgets/layouts/main";
-import {useUserStore} from "../../entities/user";
-import {downloadExistingTickets, downloadQRCodes} from "../../entities/ticket/api.qr";
+import React, {useEffect, useMemo, useState} from 'react';
+import {Check, Columns2, Columns3, GripVertical, LayoutDashboard, Settings2} from 'lucide-react';
+import {MainLayout} from '../../widgets/layouts/main';
+import {useUserStore} from '../../entities/user';
 import {canAccessQrGeneration, canAccessTicketsArchive} from '../../shared/lib';
+import {SeriesInfo} from './blocks/SeriesInfo';
+import {QrCodeGeneration} from './blocks/QrCodeGeneration';
+import {TicketsArchive} from './blocks/TicketsArchive';
+import {SalesStats} from './blocks/SalesStats';
 
-type TicketArchivePayload = {
-    ids?: number[];
-    ticket_ids?: string[];
-    range_from?: number;
-    range_to?: number;
-    for_print?: boolean;
+const LS_COLUMNS_KEY = 'dashboard_columns'
+const LS_LAYOUT_KEY = 'dashboard_block_layout'
+const DEFAULT_LAYOUT: Record<ColumnIndex, BlockId[]> = {
+  1: ['series', 'qr', 'archive'],
+  2: ['sales-stats'],
+  3: [],
 }
 
-const triggerFileDownload = (blob: Blob, filename: string) => {
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
+type ColumnCount = 1 | 2 | 3
+type ColumnIndex = 1 | 2 | 3
+type BlockId = 'series' | 'qr' | 'archive' | 'sales-stats'
+type DropTarget = {column: ColumnIndex, index: number} | null
+type DragItem = {id: BlockId, fromColumn: ColumnIndex, fromIndex: number} | null
+type DashboardLayout = Record<ColumnIndex, BlockId[]>
 
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+const COLUMN_OPTIONS = [
+  {value: 1 as ColumnCount, icon: LayoutDashboard, label: '1 колонка'},
+  {value: 2 as ColumnCount, icon: Columns2, label: '2 колонки'},
+  {value: 3 as ColumnCount, icon: Columns3, label: '3 колонки'},
+]
 
-    window.URL.revokeObjectURL(url);
-};
+const ACTIVE_COLUMNS: Record<ColumnCount, ColumnIndex[]> = {
+  1: [1],
+  2: [1, 2],
+  3: [1, 2, 3],
+}
+
+const GRID_CLASS: Record<ColumnCount, string> = {
+  1: 'grid grid-cols-1 gap-4 items-start',
+  2: 'grid grid-cols-1 lg:grid-cols-2 gap-4 items-start',
+  3: 'grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 items-start',
+}
+
+const readColumnsFromStorage = (): ColumnCount => {
+  const saved = localStorage.getItem(LS_COLUMNS_KEY)
+  if (saved === '1') return 1
+  if (saved === '3') return 3
+  return 2
+}
+
+const isBlockId = (value: unknown): value is BlockId => value === 'series' || value === 'qr' || value === 'archive' || value === 'sales-stats'
+
+const sanitizeLayout = (layout: DashboardLayout, available: BlockId[]): DashboardLayout => {
+  const seen = new Set<BlockId>()
+  const next: DashboardLayout = {1: [], 2: [], 3: []}
+
+  for (const column of [1, 2, 3] as const) {
+    for (const block of layout[column]) {
+      if (available.includes(block) && !seen.has(block)) {
+        next[column].push(block)
+        seen.add(block)
+      }
+    }
+  }
+
+  for (const block of available) {
+    if (!seen.has(block)) {
+      next[1].push(block)
+    }
+  }
+
+  return next
+}
+
+const readLayoutFromStorage = (available: BlockId[]): DashboardLayout => {
+  try {
+    const saved = localStorage.getItem(LS_LAYOUT_KEY) || JSON.stringify(DEFAULT_LAYOUT)
+      const parsed = JSON.parse(saved) as unknown
+      if (parsed && typeof parsed === 'object') {
+        const obj = parsed as Record<string, unknown>
+        const rawLayout: DashboardLayout = {
+          1: Array.isArray(obj['1']) ? obj['1'].filter(isBlockId) : [],
+          2: Array.isArray(obj['2']) ? obj['2'].filter(isBlockId) : [],
+          3: Array.isArray(obj['3']) ? obj['3'].filter(isBlockId) : [],
+        }
+        return sanitizeLayout(rawLayout, available)
+      }
+  } catch { /* ignore */ }
+
+  return sanitizeLayout({1: [...available], 2: [], 3: []}, available)
+}
+
+const persistLayout = (layout: DashboardLayout) => {
+  localStorage.setItem(LS_LAYOUT_KEY, JSON.stringify(layout))
+}
+
+const rebalanceLayoutByColumns = (layout: DashboardLayout, columnCount: ColumnCount): DashboardLayout => {
+  const activeColumns = ACTIVE_COLUMNS[columnCount]
+  const lastColumn = activeColumns[activeColumns.length - 1]
+  const next: DashboardLayout = {1: [], 2: [], 3: []}
+
+  for (const column of activeColumns) {
+    next[column] = [...layout[column]]
+  }
+
+  for (const column of [1, 2, 3] as const) {
+    if (!activeColumns.includes(column)) {
+      next[lastColumn].push(...layout[column])
+    }
+  }
+
+  return next
+}
 
 export const Dashboard: React.FC = () => {
-    const {session} = useUserStore()
-    const canUseQrGeneration = canAccessQrGeneration(session)
-    const canUseTicketArchive = canAccessTicketsArchive(session)
+  const {session} = useUserStore()
+  const canUseQrGeneration = canAccessQrGeneration(session)
+  const canUseTicketArchive = canAccessTicketsArchive(session)
 
-    const [prefix, setPrefix] = useState('GST');
-    const [part, setPart] = useState(10);
-    const [quantity, setQuantity] = useState(10);
-    const [loading, setLoading] = useState(false);
+  const availableBlocks = useMemo<BlockId[]>(() => {
+    const blocks: BlockId[] = ['series', 'sales-stats']
+    if (canUseQrGeneration) blocks.push('qr')
+    if (canUseTicketArchive) blocks.push('archive')
+    return blocks
+  }, [canUseQrGeneration, canUseTicketArchive])
 
-    const [idsInput, setIdsInput] = useState('');
-    const [ticketIdsInput, setTicketIdsInput] = useState('');
-    const [rangeFrom, setRangeFrom] = useState('');
-    const [rangeTo, setRangeTo] = useState('');
-    const [forPrint, setForPrint] = useState(false);
-    const [archiveLoading, setArchiveLoading] = useState(false);
+  const [columns, setColumns] = useState<ColumnCount>(readColumnsFromStorage)
+  const [layout, setLayout] = useState<DashboardLayout>(() => readLayoutFromStorage(availableBlocks))
+  const [editMode, setEditMode] = useState(false)
+  const [dragItem, setDragItem] = useState<DragItem>(null)
+  const [dropTarget, setDropTarget] = useState<DropTarget>(null)
 
-    const handleDownload = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
+  useEffect(() => {
+    const normalized = sanitizeLayout(layout, availableBlocks)
+    const changed = JSON.stringify(normalized) !== JSON.stringify(layout)
+    if (changed) {
+      setLayout(normalized)
+      persistLayout(normalized)
+    }
+  }, [availableBlocks, layout])
 
-        try {
-            const result = await downloadQRCodes({
-                prefix,
-                part,
-                quantity,
-            }, session?.access_token);
+  const handleColumnChange = (value: ColumnCount) => {
+    setColumns(value)
+    localStorage.setItem(LS_COLUMNS_KEY, String(value))
 
-            if ('blob' in result && 'filename' in result) {
-                triggerFileDownload(result.blob, result.filename);
-            } else {
-                throw result;
-            }
-        } catch (err) {
-            console.error(err);
-            alert('File download error');
-        } finally {
-            setLoading(false);
-        }
-    };
+    setLayout((prev) => {
+      const normalized = sanitizeLayout(prev, availableBlocks)
+      const rebalanced = sanitizeLayout(rebalanceLayoutByColumns(normalized, value), availableBlocks)
+      persistLayout(rebalanced)
+      return rebalanced
+    })
+  }
 
-    const handleArchiveDownload = async (e: React.FormEvent) => {
-        e.preventDefault();
+  const handleDragStart = (id: BlockId, fromColumn: ColumnIndex, fromIndex: number) => {
+    setDragItem({id, fromColumn, fromIndex})
+  }
 
-        const hasIds = idsInput.trim().length > 0;
-        const hasTicketIds = ticketIdsInput.trim().length > 0;
-        const hasRange = rangeFrom !== '' || rangeTo !== '';
-        const selectedVariantCount = [hasIds, hasTicketIds, hasRange].filter(Boolean).length;
+  const handleDragOver = (e: React.DragEvent, column: ColumnIndex, index: number) => {
+    e.preventDefault()
+    if (dragItem) {
+      setDropTarget({column, index})
+    }
+  }
 
-        if (selectedVariantCount !== 1) {
-            alert('Use exactly one option: ids, ticket IDs, or range.');
-            return;
-        }
+  const handleDrop = (toColumn: ColumnIndex, toIndex: number) => {
+    if (!dragItem) return
 
-        const payload: TicketArchivePayload = {};
+    setLayout((prev) => {
+      const next: DashboardLayout = {
+        1: [...prev[1]],
+        2: [...prev[2]],
+        3: [...prev[3]],
+      }
 
-        if (hasIds) {
-            const ids = idsInput
-                .split(',')
-                .map((value) => value.trim())
-                .filter(Boolean)
-                .map((value) => Number(value));
+      const fromList = next[dragItem.fromColumn]
+      const originalIndex = fromList.indexOf(dragItem.id)
+      if (originalIndex === -1) {
+        return prev
+      }
 
-            if (!ids.length || ids.some(Number.isNaN)) {
-                alert('IDs must be a comma-separated list of numbers.');
-                return;
-            }
+      fromList.splice(originalIndex, 1)
 
-            payload.ids = ids;
-        }
+      const targetList = next[toColumn]
+      const adjustedIndex = dragItem.fromColumn === toColumn && originalIndex < toIndex ? toIndex - 1 : toIndex
+      const safeIndex = Math.max(0, Math.min(adjustedIndex, targetList.length))
+      targetList.splice(safeIndex, 0, dragItem.id)
 
-        if (hasTicketIds) {
-            const ticketIds = ticketIdsInput
-                .split(',')
-                .map((value) => value.trim())
-                .filter(Boolean);
+      const normalized = sanitizeLayout(next, availableBlocks)
+      persistLayout(normalized)
+      return normalized
+    })
 
-            if (!ticketIds.length) {
-                alert('Ticket IDs must be a comma-separated list of values.');
-                return;
-            }
+    setDragItem(null)
+    setDropTarget(null)
+  }
 
-            payload.ticket_ids = ticketIds;
-        }
+  const handleDragEnd = () => {
+    setDragItem(null)
+    setDropTarget(null)
+  }
 
-        if (hasRange) {
-            if (rangeFrom !== '') {
-                payload.range_from = Number(rangeFrom);
-            }
+  const activeColumns = ACTIVE_COLUMNS[columns]
 
-            if (rangeTo !== '') {
-                payload.range_to = Number(rangeTo);
-            }
+  const renderBlock = (id: BlockId) => {
+    switch (id) {
+      case 'series': return <SeriesInfo />
+      case 'qr': return <QrCodeGeneration accessToken={session?.access_token} />
+      case 'archive': return <TicketsArchive accessToken={session?.access_token} />
+      case 'sales-stats': return <SalesStats />
+      default: return null
+    }
+  }
 
-            if (
-                (payload.range_from !== undefined && Number.isNaN(payload.range_from)) ||
-                (payload.range_to !== undefined && Number.isNaN(payload.range_to))
-            ) {
-                alert('Range values must be numbers.');
-                return;
-            }
-        }
+  return (
+    <MainLayout header={'Dashboard'}>
+      <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-stone-800 mb-2">Welcome Back, {session?.username}!</h1>
+          <p className="text-stone-600">Here's what's happening with your dashboard today.</p>
+        </div>
 
-        if (forPrint) {
-            payload.for_print = true;
-        }
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            title={editMode ? 'Готово' : 'Редактировать расположение'}
+            onClick={() => setEditMode(!editMode)}
+            className={`p-2 rounded-lg transition-colors cursor-pointer ${
+              editMode ? 'bg-amber-100 text-amber-700' : 'bg-stone-100 text-stone-500 hover:text-stone-700'
+            }`}
+          >
+            {editMode ? <Check size={18} /> : <Settings2 size={18} />}
+          </button>
 
-        setArchiveLoading(true);
+          <div className="flex items-center gap-1 bg-stone-100 rounded-lg p-1">
+            {COLUMN_OPTIONS.map(({value, icon: Icon, label}) => (
+              <button
+                key={value}
+                type="button"
+                title={label}
+                onClick={() => handleColumnChange(value)}
+                className={`p-2 rounded-md transition-colors cursor-pointer ${
+                  columns === value
+                    ? 'bg-white text-amber-700 shadow-sm'
+                    : 'text-stone-500 hover:text-stone-700'
+                }`}
+              >
+                <Icon size={18} />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
-        try {
-            const result = await downloadExistingTickets(payload, session?.access_token);
+      {editMode && (
+        <p className="text-sm text-stone-500 mb-4 flex items-center gap-1.5">
+          <GripVertical size={14} className="shrink-0" />
+          Перетащите блок в нужную колонку или в конец колонки через слот. Раскладка сохраняется автоматически.
+        </p>
+      )}
 
-            if ('blob' in result && 'filename' in result) {
-                triggerFileDownload(result.blob, result.filename);
-            } else {
-                throw result;
-            }
-        } catch (err) {
-            console.error(err);
-            alert('Archive download error');
-        } finally {
-            setArchiveLoading(false);
-        }
-    };
+      <div className={GRID_CLASS[columns]}>
+        {activeColumns.map((column) => (
+          <div
+            key={column}
+            className="flex flex-col gap-4"
+            onDragOver={editMode ? (e) => handleDragOver(e, column, layout[column].length) : undefined}
+          >
+            {layout[column].map((id, index) => {
+              const isDragging = dragItem?.id === id
+              const isDropTarget = dropTarget?.column === column && dropTarget.index === index && dragItem?.id !== id
 
-    return (
-        <MainLayout header={'Dashboard'}>
-            <div className="mb-8">
-                <h1 className="text-2xl lg:text-3xl font-bold text-stone-800 mb-2">Welcome Back, {session?.username}!</h1>
-                <p className="text-stone-600">Here's what's happening with your dashboard today.</p>
-            </div>
-
-            {(canUseQrGeneration || canUseTicketArchive) && (
-                <div className="space-y-4 max-w-2xl">
-                    {canUseQrGeneration && (
-                        <details className="bg-stone-50 border border-stone-200 rounded-lg p-4 group">
-                            <summary className="list-none cursor-pointer flex items-center justify-between gap-3">
-                                <div>
-                                    <h2 className="text-lg font-semibold text-stone-800">Debug: QR Code Generation</h2>
-                                    <p className="text-sm text-stone-500">Generate a new QR archive.</p>
-                                </div>
-                                <ChevronDown className="text-stone-500 transition-transform group-open:rotate-180" size={18} />
-                            </summary>
-
-                            <form className="flex flex-col gap-3 mt-4" onSubmit={handleDownload}>
-                                <div className="flex gap-2 items-center">
-                                    <label className="w-24 font-medium">Prefix:</label>
-                                    <input type="text" value={prefix} onChange={e => setPrefix(e.target.value)} className="border rounded px-2 py-1 flex-1" required />
-                                </div>
-                                <div className="flex gap-2 items-center">
-                                    <label className="w-24 font-medium">Part:</label>
-                                    <input type="number" value={part} min={1} onChange={e => setPart(Number(e.target.value))} className="border rounded px-2 py-1 flex-1" required />
-                                </div>
-                                <div className="flex gap-2 items-center">
-                                    <label className="w-24 font-medium">Quantity:</label>
-                                    <input type="number" value={quantity} min={1} onChange={e => setQuantity(Number(e.target.value))} className="border rounded px-2 py-1 flex-1" required />
-                                </div>
-                                <button type="submit" className="mt-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-60" disabled={loading}>
-                                    {loading ? 'Downloading...' : 'Generate and Download'}
-                                </button>
-                            </form>
-                        </details>
-                    )}
-
-                    {canUseTicketArchive && (
-                        <details className="bg-stone-50 border border-stone-200 rounded-lg p-4 group">
-                            <summary className="list-none cursor-pointer flex items-center justify-between gap-3">
-                                <div>
-                                    <h2 className="text-lg font-semibold text-stone-800">Debug: Existing Tickets Archive</h2>
-                                    <p className="text-sm text-stone-500">Download already created tickets by one filter only.</p>
-                                </div>
-                                <ChevronDown className="text-stone-500 transition-transform group-open:rotate-180" size={18} />
-                            </summary>
-
-                            <form className="flex flex-col gap-3 mt-4" onSubmit={handleArchiveDownload}>
-                                <p className="text-sm text-stone-500">
-                                    Fill only one variant: <strong>ids</strong>, <strong>ticket IDs</strong>, or <strong>range</strong>.
-                                </p>
-
-                                <div className="flex gap-2 items-center">
-                                    <label className="w-24 font-medium">IDs:</label>
-                                    <input
-                                        type="text"
-                                        value={idsInput}
-                                        onChange={e => setIdsInput(e.target.value)}
-                                        placeholder="1, 2, 3"
-                                        className="border rounded px-2 py-1 flex-1"
-                                    />
-                                </div>
-
-                                <div className="flex gap-2 items-center">
-                                    <label className="w-24 font-medium">Ticket IDs:</label>
-                                    <input
-                                        type="text"
-                                        value={ticketIdsInput}
-                                        onChange={e => setTicketIdsInput(e.target.value)}
-                                        placeholder="GST-10-1, GST-10-2"
-                                        className="border rounded px-2 py-1 flex-1"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div className="flex gap-2 items-center">
-                                        <label className="w-24 font-medium">From:</label>
-                                        <input
-                                            type="number"
-                                            min={1}
-                                            value={rangeFrom}
-                                            onChange={e => setRangeFrom(e.target.value)}
-                                            placeholder="100"
-                                            className="border rounded px-2 py-1 flex-1"
-                                        />
-                                    </div>
-                                    <div className="flex gap-2 items-center">
-                                        <label className="w-24 font-medium">To:</label>
-                                        <input
-                                            type="number"
-                                            min={1}
-                                            value={rangeTo}
-                                            onChange={e => setRangeTo(e.target.value)}
-                                            placeholder="200"
-                                            className="border rounded px-2 py-1 flex-1"
-                                        />
-                                    </div>
-                                </div>
-
-                                <label className="flex items-center gap-2 text-sm text-stone-700">
-                                    <input
-                                        type="checkbox"
-                                        checked={forPrint}
-                                        onChange={e => setForPrint(e.target.checked)}
-                                    />
-                                    For print
-                                </label>
-
-                                <button type="submit" className="mt-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-60" disabled={archiveLoading}>
-                                    {archiveLoading ? 'Downloading...' : 'Download Existing Tickets'}
-                                </button>
-                            </form>
-                        </details>
-                    )}
+              return (
+                <div
+                  key={id}
+                  draggable={editMode}
+                  onDragStart={editMode ? () => handleDragStart(id, column, index) : undefined}
+                  onDragOver={editMode ? (e) => handleDragOver(e, column, index) : undefined}
+                  onDrop={editMode ? () => handleDrop(column, index) : undefined}
+                  onDragEnd={editMode ? handleDragEnd : undefined}
+                  className={[
+                    'relative transition-all duration-150',
+                    editMode ? 'cursor-grab active:cursor-grabbing' : '',
+                    isDragging ? 'opacity-30 scale-95' : '',
+                    isDropTarget ? 'ring-2 ring-amber-400 ring-offset-2 rounded-lg' : '',
+                  ].filter(Boolean).join(' ')}
+                >
+                  {editMode && (
+                    <div className="absolute top-3 right-3 z-10 bg-white/80 border border-stone-200 rounded p-1 text-stone-400 pointer-events-none">
+                      <GripVertical size={16} />
+                    </div>
+                  )}
+                  {renderBlock(id)}
                 </div>
+              )
+            })}
+
+            {editMode && (
+              <div
+                onDragOver={(e) => handleDragOver(e, column, layout[column].length)}
+                onDrop={() => handleDrop(column, layout[column].length)}
+                className={[
+                  'h-9 rounded-lg border border-dashed transition-colors',
+                  dropTarget?.column === column && dropTarget.index === layout[column].length
+                    ? 'border-amber-400 bg-amber-50'
+                    : 'border-stone-200 bg-transparent',
+                ].join(' ')}
+                title="Слот в конец колонки"
+              />
             )}
-        </MainLayout>
-    )
-};
+          </div>
+        ))}
+      </div>
+    </MainLayout>
+  )
+}
+

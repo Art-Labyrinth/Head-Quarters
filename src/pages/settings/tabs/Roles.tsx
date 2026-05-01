@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react'
-import {Edit2, Plus, Trash2, X} from 'lucide-react'
+import {Edit2, Trash2, X} from 'lucide-react'
 import {createRole, deleteRole, getPermissionsSchema, getRoles, updateRole} from '../../../entities/role'
-import type {PermissionItem, PermissionSchema, Role, RoleCreatePayload} from '../../../entities/role'
+import type {PermissionItem, PermissionSchema, PermissionRight, Role, RoleCreatePayload} from '../../../entities/role'
 import {useUserStore} from '../../../entities/user'
 import {hasModuleRight} from '../../../shared/lib'
 
@@ -49,10 +49,24 @@ const extractPermissionSchema = (payload: unknown): PermissionSchema => {
   return { modules, rights }
 }
 
-const getDefaultPermission = (schema: PermissionSchema): PermissionItem => ({
-  module: schema.modules[0] ?? '',
-  rights: schema.rights[0]?.bit ?? 0,
-})
+const hasRightBit = (rights: number, bit: number): boolean => (rights & bit) !== 0
+
+const toggleRightBit = (rights: number, bit: number, checked: boolean): number => {
+  if (checked) {
+    return rights | bit
+  }
+
+  return rights & ~bit
+}
+
+const formatRightLabel = (right: PermissionRight): string => {
+  const normalizedName = right.name.trim()
+  if (!normalizedName) {
+    return String(right.bit)
+  }
+
+  return normalizedName.charAt(0).toUpperCase() + normalizedName.slice(1)
+}
 
 type RoleModalProps = {
   isOpen: boolean
@@ -74,7 +88,7 @@ const RoleModal: React.FC<RoleModalProps> = ({
   const [name, setName] = useState('')
   const [homepage, setHomepage] = useState('')
   const [description, setDescription] = useState('')
-  const [permissions, setPermissions] = useState<PermissionItem[]>([])
+  const [rightsMap, setRightsMap] = useState<Record<string, number>>({})
   const [error, setError] = useState<string | null>(null)
 
   const isEdit = Boolean(initialRole?.id)
@@ -87,41 +101,28 @@ const RoleModal: React.FC<RoleModalProps> = ({
     setName(initialRole?.name ?? '')
     setHomepage(initialRole?.homepage ?? '')
     setDescription(initialRole?.description ?? '')
-    setPermissions((initialRole?.permissions?.length ? initialRole.permissions : [getDefaultPermission(schema)]).map((item) => ({
-      module: item.module,
-      rights: item.rights,
-    })))
+
+    const map: Record<string, number> = {}
+    if (initialRole?.permissions?.length) {
+      for (const item of initialRole.permissions) {
+        map[item.module] = item.rights
+      }
+    }
+    setRightsMap(map)
     setError(null)
   }, [initialRole, isOpen, schema])
 
-  const canManagePermissions = schema.modules.length > 0 && schema.rights.length > 0
+  const canManagePermissions = schema.modules.length > 0
 
   if (!isOpen) {
     return null
   }
 
-  const updatePermission = (index: number, field: keyof PermissionItem, value: string | number) => {
-    setPermissions((prev) => prev.map((item, itemIndex) => {
-      if (itemIndex !== index) {
-        return item
-      }
-
-      return {
-        ...item,
-        [field]: value,
-      }
+  const updateRight = (module: string, bit: number, checked: boolean) => {
+    setRightsMap((prev) => ({
+      ...prev,
+      [module]: toggleRightBit(prev[module] ?? 0, bit, checked),
     }))
-  }
-
-  const addPermission = () => {
-    if (!canManagePermissions) {
-      return
-    }
-    setPermissions((prev) => [...prev, getDefaultPermission(schema)])
-  }
-
-  const removePermission = (index: number) => {
-    setPermissions((prev) => prev.filter((_, i) => i !== index))
   }
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -133,12 +134,9 @@ const RoleModal: React.FC<RoleModalProps> = ({
       return
     }
 
-    const normalizedPermissions = permissions
-      .map((permission) => ({
-        module: permission.module.trim(),
-        rights: Number(permission.rights),
-      }))
-      .filter((permission) => permission.module && Number.isFinite(permission.rights) && permission.rights > 0)
+    const normalizedPermissions: PermissionItem[] = Object.entries(rightsMap)
+      .filter(([module, rights]) => module && rights > 0)
+      .map(([module, rights]) => ({ module, rights }))
 
     const payload: RoleCreatePayload = {
       name: name.trim(),
@@ -204,58 +202,49 @@ const RoleModal: React.FC<RoleModalProps> = ({
             </label>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-stone-800">Permissions</h3>
-                <button
-                  type="button"
-                  onClick={addPermission}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-stone-100 text-stone-700 rounded hover:bg-stone-200 cursor-pointer disabled:opacity-60"
-                  disabled={!canManagePermissions || isSubmitting}
-                >
-                  <Plus size={14} />
-                  Add
-                </button>
-              </div>
+              <h3 className="font-semibold text-stone-800">Permissions</h3>
 
               {!canManagePermissions && (
                 <p className="text-sm text-stone-500">Справочник permissions пока недоступен.</p>
               )}
 
-              {permissions.map((permission, index) => (
-                <div key={`${permission.module}-${permission.rights}-${index}`} className="grid grid-cols-12 gap-2 items-center">
-                  <select
-                    className="col-span-6 px-3 py-2 border border-stone-300 rounded-md"
-                    value={permission.module}
-                    onChange={(e) => updatePermission(index, 'module', e.target.value)}
-                    disabled={!canManagePermissions || isSubmitting}
-                  >
-                    {schema.modules.map((module) => (
-                      <option key={module} value={module}>{module}</option>
-                    ))}
-                  </select>
-
-                  <select
-                    className="col-span-5 px-3 py-2 border border-stone-300 rounded-md"
-                    value={permission.rights}
-                    onChange={(e) => updatePermission(index, 'rights', Number(e.target.value))}
-                    disabled={!canManagePermissions || isSubmitting}
-                  >
-                    {schema.rights.map((right) => (
-                      <option key={right.bit} value={right.bit}>{right.name} ({right.bit})</option>
-                    ))}
-                  </select>
-
-                  <button
-                    type="button"
-                    onClick={() => removePermission(index)}
-                    className="col-span-1 text-red-600 hover:text-red-800 cursor-pointer disabled:opacity-60"
-                    disabled={isSubmitting}
-                    title="Удалить permission"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+              {canManagePermissions && (
+                <div className="border border-stone-200 rounded overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-stone-50 border-b border-stone-200">
+                        <th className="py-2 px-3 text-left font-medium text-stone-600">Модуль</th>
+                        {schema.rights.map((right) => (
+                          <th key={right.bit} className="py-2 px-2 text-center font-medium text-stone-600 whitespace-nowrap">
+                            {formatRightLabel(right)}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {schema.modules.map((module) => {
+                        const rights = rightsMap[module] ?? 0
+                        return (
+                          <tr key={module} className="border-b border-stone-100 last:border-0 hover:bg-stone-50">
+                            <td className="py-2 px-3 text-stone-700">{module}</td>
+                            {schema.rights.map((right) => (
+                              <td key={right.bit} className="py-2 px-2 text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={hasRightBit(rights, right.bit)}
+                                  onChange={(e) => updateRight(module, right.bit, e.target.checked)}
+                                  disabled={isSubmitting}
+                                  className="w-4 h-4 border-stone-300 rounded cursor-pointer"
+                                />
+                              </td>
+                            ))}
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-              ))}
+              )}
             </div>
 
             {error && <div className="text-sm text-red-600">{error}</div>}
