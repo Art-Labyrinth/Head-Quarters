@@ -9,6 +9,7 @@ type TicketArchivePayload = {
   range_from?: number
   range_to?: number
   for_print?: boolean
+  qr_only?: boolean
 }
 
 type Props = {
@@ -21,6 +22,7 @@ export const TicketsArchive: React.FC<Props> = ({accessToken}) => {
   const [rangeFrom, setRangeFrom] = useState('')
   const [rangeTo, setRangeTo] = useState('')
   const [forPrint, setForPrint] = useState(false)
+  const [qrOnly, setQrOnly] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const handleDownload = async (e: React.FormEvent) => {
@@ -82,6 +84,10 @@ export const TicketsArchive: React.FC<Props> = ({accessToken}) => {
 
     if (forPrint) {
       payload.for_print = true
+    }
+
+    if (qrOnly) {
+      payload.qr_only = true
     }
 
     setLoading(true)
@@ -171,6 +177,15 @@ export const TicketsArchive: React.FC<Props> = ({accessToken}) => {
             onChange={(e) => setForPrint(e.target.checked)}
           />
           For print
+        </label>
+
+        <label className="flex items-center gap-2 text-sm text-stone-700">
+          <input
+            type="checkbox"
+            checked={qrOnly}
+            onChange={(e) => setQrOnly(e.target.checked)}
+          />
+          QR codes only
         </label>
 
         <button
