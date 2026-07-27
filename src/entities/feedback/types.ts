@@ -76,3 +76,10 @@ export type RecordSource = string
 export type SortOrder = 'asc' | 'desc'
 
 export const isFeedbackSource = (source: RecordSource): boolean => source === FEEDBACK_SOURCE
+
+/**
+ * Which table a row came from. `form_version` is the honest discriminant: the
+ * contact form has no such notion, and every survey row carries one.
+ */
+export const isSurveyRecord = (record: FeedbackAnyRecord): record is SurveyRecord =>
+  'form_version' in record

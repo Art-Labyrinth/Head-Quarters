@@ -4,15 +4,23 @@ import { Search } from 'lucide-react'
 import debounce from 'debounce'
 
 import { MainLayout } from '../../widgets/layouts/main'
-import { RecordsPanel, SurveyRecordModal, buildFeedbackColumns, buildSurveyColumns, useColumnPrefs } from '../../widgets/feedback'
+import {
+  FeedbackRecordModal,
+  RecordsPanel,
+  SurveyRecordModal,
+  buildFeedbackColumns,
+  buildSurveyColumns,
+  useColumnPrefs,
+} from '../../widgets/feedback'
 import {
   FEEDBACK_SOURCE,
   SURVEY_FORMS,
   getSurveyFormSpec,
   isFeedbackSource,
+  isSurveyRecord,
   useFeedbackRecordsStore,
 } from '../../entities/feedback'
-import type { FeedbackRecord, SortOrder, SurveyRecord } from '../../entities/feedback'
+import type { FeedbackAnyRecord, FeedbackRecord, SortOrder, SurveyRecord } from '../../entities/feedback'
 import { useUserStore } from '../../entities/user'
 import { hasModuleRight } from '../../shared/lib'
 
@@ -51,7 +59,9 @@ export const FeedbackPage: React.FC = () => {
   const fieldFilters = useMemo(() => searchParams.getAll(FILTER_PARAM), [searchParams])
 
   const [searchInput, setSearchInput] = useState(search)
-  const [selected, setSelected] = useState<SurveyRecord | null>(null)
+  // Both tabs open a detail view, but over different tables — the record itself
+  // says which modal to render, so one slot serves both.
+  const [selected, setSelected] = useState<FeedbackAnyRecord | null>(null)
 
   const { prefs, update: updatePrefs, reset: resetPrefs } = useColumnPrefs(source)
 
@@ -320,6 +330,7 @@ export const FeedbackPage: React.FC = () => {
           {...panelProps}
           columns={feedbackColumns}
           items={items as FeedbackRecord[]}
+          onRowClick={setSelected}
           emptyText="Сообщений не найдено"
           loadingText="Загрузка сообщений..."
         />
@@ -334,13 +345,19 @@ export const FeedbackPage: React.FC = () => {
         />
       )}
 
-      {selected && (
+      {selected && (isSurveyRecord(selected) ? (
         <SurveyRecordModal
           record={selected}
           onClose={() => setSelected(null)}
           onDelete={canDelete ? handleDelete : undefined}
         />
-      )}
+      ) : (
+        <FeedbackRecordModal
+          record={selected}
+          onClose={() => setSelected(null)}
+          onDelete={canDelete ? handleDelete : undefined}
+        />
+      ))}
     </MainLayout>
   )
 }

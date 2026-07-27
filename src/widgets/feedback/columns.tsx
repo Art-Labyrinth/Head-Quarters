@@ -53,8 +53,9 @@ const createdAtColumn = <T extends { created_at: string }>(): ColumnDef<T> => ({
  *
  * Answers come from the version's own spec, so switching tabs switches the
  * whole set of columns; technical fields are the same for every version.
- * Defaults stay narrow on purpose — anything wide (the long answers, the zone
- * and help chips) is off until someone turns it on in the settings dialog.
+ * Every answer is visible by default: a questionnaire is read by comparing
+ * answers, and a hidden column is one nobody knows to look for. The table
+ * scrolls horizontally, and the settings dialog is there to narrow it down.
  */
 export const buildSurveyColumns = (spec: SurveyFormSpec, prefs: ColumnPrefs): ColumnDef<SurveyRecord>[] => {
   const answerColumns: ColumnDef<SurveyRecord>[] = spec.questions.map((question) => {
@@ -70,7 +71,7 @@ export const buildSurveyColumns = (spec: SurveyFormSpec, prefs: ColumnPrefs): Co
         return {
           ...base,
           chipKind: 'zones' as const,
-          defaultVisible: false,
+          defaultVisible: true,
           defaultWidth: prefs.zonesMode === 'detailed' ? 320 : 110,
           render: (record) => (
             <ZonesCell raw={record[question.column]} mode={prefs.zonesMode} limit={prefs.detailedLimit} />
@@ -80,7 +81,7 @@ export const buildSurveyColumns = (spec: SurveyFormSpec, prefs: ColumnPrefs): Co
         return {
           ...base,
           chipKind: 'help' as const,
-          defaultVisible: false,
+          defaultVisible: true,
           defaultWidth: prefs.helpMode === 'detailed' ? 320 : 130,
           render: (record) => (
             <HelpCell raw={record[question.column]} mode={prefs.helpMode} limit={prefs.detailedLimit} />
@@ -99,7 +100,7 @@ export const buildSurveyColumns = (spec: SurveyFormSpec, prefs: ColumnPrefs): Co
       default:
         return {
           ...base,
-          defaultVisible: question.semantic === 'name',
+          defaultVisible: true,
           defaultWidth: question.semantic === 'name' ? 160 : 260,
           render: (record) => <LongText value={record[question.column]} />,
         }
