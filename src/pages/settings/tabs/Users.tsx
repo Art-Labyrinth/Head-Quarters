@@ -199,7 +199,26 @@ type EditUserModalProps = {
   roles: Role[]
   isSubmitting?: boolean
   onClose: () => void
-  onSave: (payload: {id: number, username: string, role_id?: number}) => Promise<void>
+  onSave: (payload: {id: number, username: string, role_id?: number, password?: string}) => Promise<void>
+}
+
+const min_password_length = 8
+
+/**
+ * Validates a new password before it is sent to the server.
+ *
+ * Only called for a non-empty field: an empty field means "keep the current password".
+ * Returns an error message, or null when the password is acceptable.
+ *
+ * PUT /users/{id} accepts any non-empty string, but POST /users/login enforces
+ * min_length=8, so a shorter password would lock the user out of signing in.
+ */
+const validateNewPassword = (password: string): string | null => {
+  if (password.length < min_password_length) {
+    return `Пароль должен содержать минимум ${min_password_length} символов.`
+  }
+
+  return null
 }
 
 const EditUserModal: React.FC<EditUserModalProps> = ({
@@ -212,6 +231,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 }) => {
   const [username, setUsername] = useState('')
   const [roleId, setRoleId] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -220,6 +240,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     }
     setUsername(user?.username ?? '')
     setRoleId(user?.role?.id ? String(user.role.id) : '')
+    setPassword('')
     setError(null)
   }, [isOpen, user])
 
@@ -238,11 +259,21 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       return
     }
 
+    // An empty password field means "keep the current password", so only validate a filled one.
+    if (password) {
+      const passwordError = validateNewPassword(password)
+      if (passwordError) {
+        setError(passwordError)
+        return
+      }
+    }
+
     try {
       await onSave({
         id: userId,
         username: username.trim(),
         role_id: roleId ? Number(roleId) : undefined,
+        password: password || undefined,
       })
       onClose()
     } catch (err) {
@@ -276,6 +307,22 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 className="w-full px-3 py-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                 disabled={isSubmitting}
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">Новый пароль</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                placeholder="Оставьте пустым, чтобы не менять"
+                autoComplete="new-password"
+                disabled={isSubmitting}
+              />
+              <p className="mt-1 text-xs text-stone-500">
+                Пароль изменится только если заполнить это поле. Минимум {min_password_length} символов.
+              </p>
             </div>
 
             <div>
@@ -416,14 +463,14 @@ export const UsersManagement: React.FC = () => {
     setEditingUser(null)
   }
 
-  const handleUpdateUser = async ({id, username, role_id}: {id: number, username: string, role_id?: number}) => {
+  const handleUpdateUser = async ({id, username, role_id, password}: {id: number, username: string, role_id?: number, password?: string}) => {
     if (!canEditOrCreate) {
       throw new Error('Недостаточно прав для редактирования пользователей.')
     }
 
     setIsSubmitting(true)
     try {
-      await updateUser(id, {username, role_id})
+      await updateUser(id, {username, role_id, password})
       await loadUsers()
     } catch (e) {
       throw e instanceof Error ? e : new Error('Ошибка при обновлении пользователя.')
