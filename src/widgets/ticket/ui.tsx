@@ -4,7 +4,7 @@ import { useTicketListStore } from "../../entities/ticket";
 import { Ticket } from "../../entities/ticket/types.ts";
 import { TicketModal } from "./TicketModal";
 import { CreateTicketModal } from "./CreateTicketModal";
-import { Pagination } from "./Pagination";
+import { Pagination } from "../../shared/ui/Pagination";
 
 interface TicketTableProps {
     currentPage: number;

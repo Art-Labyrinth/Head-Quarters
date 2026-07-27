@@ -1,16 +1,18 @@
 import React, {useState} from 'react';
-import {ChevronDown, GraduationCap, Heart, Home, LogOut, Menu, Search, Settings, Ticket, X} from 'lucide-react';
+import {ChevronDown, GraduationCap, Heart, Home, LogOut, Menu, MessageSquare, Search, Settings, Ticket, X} from 'lucide-react';
 import {usePageTitle} from '../../../shared/lib';
 import {useNavigate} from "react-router-dom";
 import {useUserStore} from "../../../entities/user";
-import {canAccessDashboard, canAccessSettings, hasModuleRight} from '../../../shared/lib/permissions';
+import {canAccessDashboard, canAccessFeedback, canAccessSettings, hasModuleRight} from '../../../shared/lib/permissions';
 
 export type MainLayoutProps = {
     header: string,
+    /** Drops the centred max-width, for pages built around a wide table. */
+    fullWidth?: boolean;
     children?: React.ReactNode;
 };
 
-export const MainLayout = ({header, children}: MainLayoutProps) => {
+export const MainLayout = ({header, fullWidth = false, children}: MainLayoutProps) => {
     const {session} = useUserStore()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -21,6 +23,7 @@ export const MainLayout = ({header, children}: MainLayoutProps) => {
     const canMastersPage = hasModuleRight(session, 'masters', 1)
     const canVolunteersPage = hasModuleRight(session, 'volunteers', 1)
     const canTicketsPage = hasModuleRight(session, 'tickets', 1)
+    const canFeedbackPage = canAccessFeedback(session)
     const canSettingsPage = canAccessSettings(session)
 
     const menuItems = [
@@ -45,6 +48,13 @@ export const MainLayout = ({header, children}: MainLayoutProps) => {
             route: '/tickets',
             active: isRouteActive('/tickets'),
             hasPermission: canTicketsPage
+        },
+        {
+            icon: MessageSquare,
+            label: 'Feedback',
+            route: '/feedback',
+            active: isRouteActive('/feedback'),
+            hasPermission: canFeedbackPage
         },
         {
             icon: Settings,
@@ -178,7 +188,7 @@ export const MainLayout = ({header, children}: MainLayoutProps) => {
 
             {/* Main Content */}
             <main className="p-4 lg:p-6">
-                <div className="max-w-7xl mx-auto">
+                <div className={fullWidth ? 'w-full' : 'max-w-7xl mx-auto'}>
                     {children}
                 </div>
             </main>

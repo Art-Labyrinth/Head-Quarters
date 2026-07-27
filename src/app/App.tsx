@@ -12,7 +12,8 @@ import {VolunteerPage} from "../pages/volunteer";
 import {MasterPage} from "../pages/master";
 import {TicketPage} from "../pages/ticket";
 import {SettingsPage} from "../pages/settings";
-import {canAccessDashboard, canAccessSettings, hasModuleRight} from '../shared/lib/permissions';
+import {FeedbackPage} from "../pages/feedback";
+import {canAccessDashboard, canAccessFeedback, canAccessSettings, hasModuleRight} from '../shared/lib/permissions';
 
 function App() {
   const { isLoggedIn, session } = useUserStore()
@@ -21,6 +22,7 @@ function App() {
   const canMastersPage = hasModuleRight(session, 'masters', 1)
   const canVolunteersPage = hasModuleRight(session, 'volunteers', 1)
   const canTicketsPage = hasModuleRight(session, 'tickets', 1)
+  const canFeedbackPage = canAccessFeedback(session)
   const canSettingsPage = canAccessSettings(session)
 
   const defaultRoute = canDashboardPage
@@ -31,9 +33,11 @@ function App() {
         ? '/volunteers'
         : canTicketsPage
           ? '/tickets'
-          : canSettingsPage
-            ? '/settings'
-            : '/login'
+          : canFeedbackPage
+            ? '/feedback'
+            : canSettingsPage
+              ? '/settings'
+              : '/login'
 
   return (
     <>
@@ -48,6 +52,7 @@ function App() {
             <Route path=":id" element={<PrivateRoute isAllowed={isLoggedIn}>{canMastersPage ? <MasterPage /> : <NotFound />}</PrivateRoute>} />
           </Route>
           <Route path="/tickets" element={<PrivateRoute isAllowed={isLoggedIn}>{canTicketsPage ? <TicketPage /> : <NotFound />}</PrivateRoute>} />
+          <Route path="/feedback" element={<PrivateRoute isAllowed={isLoggedIn}>{canFeedbackPage ? <FeedbackPage /> : <NotFound />}</PrivateRoute>} />
           <Route path="/settings" element={<PrivateRoute isAllowed={isLoggedIn}>{canSettingsPage ? <SettingsPage /> : <NotFound />}</PrivateRoute>} />
           <Route path="*" element={<NotFound/>}/>
         </Routes>

@@ -38,3 +38,6 @@ export const canAccessTicketsArchive = (session: AuthResponseData | null | undef
 
 export const canAccessSettings = (session: AuthResponseData | null | undefined): boolean =>
   hasModuleRight(session, 'users', 1) || hasModuleRight(session, 'roles', 1)
+
+export const canAccessFeedback = (session: AuthResponseData | null | undefined): boolean =>
+  hasModuleRight(session, 'feedback', 1)
